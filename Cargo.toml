@@ -1,9 +1,10 @@
 [package]
 name = "cpsc_323_compiler_project"
 version = "0.1.0"
-authors = ["David Rotter <drotter120@users.noreply.github.com>", "ADD YOURSELF HERE"]
+authors = ["David Rotter <drotter120@users.noreply.github.com>", "Joshua Hughes <joshuathughes@csu.fullerton.edu>", "ADD YOURSELF HERE"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+array2d = "0.2.1"
