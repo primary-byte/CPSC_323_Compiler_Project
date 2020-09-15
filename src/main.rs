@@ -2,6 +2,8 @@ use std::io::{BufReader};
 use std::io;
 use std::fs::File;
 use std::io::prelude::*;
+use std::env;   //for command line arguments, eg filename.txt
+
 use FsmTransitions::*;
 
 
@@ -44,6 +46,7 @@ fn main() {
         print!("\n"); //new line
     }
 
+
     let expression = convert_file_to_string( get_file_name() );
     
     lexer(expression);
@@ -51,6 +54,15 @@ fn main() {
 
 fn get_file_name() -> String {
 
+    //check for command line arguments
+    let args: Vec<String> = env::args().collect();
+    
+    //if we have command line argument then use that instead of asking the user
+    if args.len() > 1 {
+        return args[1].to_string();
+    }
+
+    //otherwise ask for input
     let mut file_name = String::new();
 
     println!("Please enter the name of the file: ");
