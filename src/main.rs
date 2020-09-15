@@ -18,7 +18,7 @@ enum FsmTransitions {
 
 }
 
-const StateTable: &[&[FsmTransitions]]  = &[
+const STATE_TABLE: &[&[FsmTransitions]]  = &[
     &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space],  //row 0
     &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space]   //row 1
 ];
@@ -36,7 +36,7 @@ fn main() {
     println!("State Table: ");
 
     //rows
-    for row in StateTable.iter(){        
+    for row in STATE_TABLE.iter(){        
         //columns
         for value in row.iter(){
             print!(" {:?}", value);
