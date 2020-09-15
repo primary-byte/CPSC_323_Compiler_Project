@@ -81,7 +81,8 @@ fn convert_file_to_string( file_name: String) -> String {
     let mut file = BufReader::new( File::open( file_name.trim() )
                                    .expect("Can't open file!"));
 
-    file.read_to_string(&mut contents);
+    file.read_to_string(&mut contents)
+    .expect("Error reading file!");
 
     contents
 }
