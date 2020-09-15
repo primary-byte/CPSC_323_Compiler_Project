@@ -1,11 +1,12 @@
-use std::io::{BufRead, BufReader};
+use std::io::{BufReader};
 use std::io;
 use std::fs::File;
 use std::io::prelude::*;
-use array2d::Array2D;
-use FSM_TRANSITIONS::*;
-#[derive(Copy, Clone)]
-enum FSM_TRANSITIONS {
+use FsmTransitions::*;
+
+
+#[derive(Copy, Clone, Debug)]
+enum FsmTransitions {
  
     _Reject = 0,
     _Integer = 1,
@@ -17,11 +18,14 @@ enum FSM_TRANSITIONS {
 
 }
 
-static rows: Vec<Vec<FSM_TRANSITIONS>> = vec![vec![ _Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space]];
+const StateTable: &[&[FsmTransitions]]  = &[
+    &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space],  //row 0
+    &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space]   //row 1
+];
 
-static state_table: array2d::Array2D<FSM_TRANSITIONS> = Array2D::from_rows(&rows);
 
-struct token_type {
+
+struct TokenType {
     token: String,
     lexeme: u32,
     lexeme_name: String
@@ -29,9 +33,18 @@ struct token_type {
 
 fn main() {
    
-    let mut expression = String::new();
+    println!("State Table: ");
 
-    expression = convert_file_to_string( get_file_name() );
+    //rows
+    for row in StateTable.iter(){        
+        //columns
+        for value in row.iter(){
+            print!(" {:?}", value);
+        }
+        print!("\n"); //new line
+    }
+
+    let expression = convert_file_to_string( get_file_name() );
     
     lexer(expression);
 }
@@ -64,7 +77,8 @@ fn convert_file_to_string( file_name: String) -> String {
 
 fn lexer( expression: String ) {
     
-    
+    //do stuff for lexing
+    print!("{}",expression);
 
 }
 
