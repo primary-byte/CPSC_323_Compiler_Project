@@ -7,34 +7,52 @@ use std::env;   //for command line arguments, eg filename.txt
 use FsmTransitions::*;
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum FsmTransitions {
  
-    _Reject = 0,
-    _Integer = 1,
-    _Real = 2,
-    _Operator = 3,
-    _String = 4,
-    _Unknown = 5,
-    _Space = 6
+    _Reject,
+    _Integer,
+    _Real,
+    _Operator,
+    _String,
+    _Unknown,
+    _Space,
 
 }
 
 const STATE_TABLE: &[&[FsmTransitions]]  = &[
-    &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space],  //row 0
-    &[_Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space]   //row 1
+    &[ _Reject,   _Integer, _Real,    _Operator, _String,  _Unknown, _Space ], //Default
+    &[ _Integer,  _Integer, _Real,    _Reject,   _Reject,  _Reject,  _Reject], //State 1
+    &[ _Real,     _Real,    _Unknown, _Reject,   _Reject,  _Reject,  _Reject], //State 2
+    &[ _Operator, _Reject,  _Reject,  _Reject,   _String,  _Reject,  _Reject], //State 3
+    &[ _String,   _String,  _Reject,  _String,   _String,  _Reject,  _Reject], //State 4
+    &[ _Unknown,  _Unknown, _Unknown, _Unknown,  _Unknown, _Unknown, _Reject], //State 5
+    &[ _Space,    _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject], //State 6
 ];
 
 
-
+#[derive(Copy, Clone)]
 struct TokenType {
-    token: String,
-    lexeme: u32,
-    lexeme_name: String
+    token: str,
+    lexeme: FsmTransitions,
+    lexeme_name: str,
 }
 
+impl Default for TokenType {
+    fn default () -> TokenType {
+        TokenType{token: "".to_string(), lexeme: _Reject, lexeme_name: "".to_string()}
+    }
+}
+/*fn build_token(token: String, lexeme: u32, lexeme_name: String) -> TokenType {
+   TokenType{
+       token,
+       lexeme,
+       lexeme_name,
+   }
+}*/
+
 fn main() {
-   
+   /*
     println!("State Table: ");
 
     //rows
@@ -44,12 +62,12 @@ fn main() {
             print!(" {:?}", value);
         }
         print!("\n"); //new line
-    }
+    }*/
+
 
 
     let expression = convert_file_to_string( get_file_name() );
-    
-    lexer(expression);
+    let mut token: Vec<TokenType> = lexer( &expression );
 }
 
 fn get_file_name() -> String {
@@ -88,10 +106,89 @@ fn convert_file_to_string( file_name: String) -> String {
 }
 
 
-fn lexer( expression: String ) {
+fn lexer( expression: &String ) -> Vec<TokenType> {
+  
+    let mut access = TokenType::default();
+    let mut tokens: Vec<TokenType> = Vec::new();
+    let mut col: FsmTransitions = _Reject;
+    let mut prev_state: FsmTransitions = _Reject;
+    let mut current_state: FsmTransitions = _Reject;
+    let mut current_token = String::new();
+
+    for c in expression.chars() {
+
+        col = get_col( c );
+       // println!("Collum is {} .", col as i32);
+       current_state = STATE_TABLE[current_state as usize][col as usize];
+
+       if( current_state == _Reject ) {
+
+           if( prev_state != _Space ){
+
+               access.token = current_token;
+               access.lexeme = prev_state;
+               access.lexeme_name = get_lexeme_name( &access.lexeme );
+               tokens.push( access );
+           }
+           current_token = "".to_string();
+       } else {
+           current_token.push( c );
+       } 
+       
+       prev_state = current_state;
+    }
+
+    if current_state != _Space && current_token != "" {
+        access.token = current_token;
+        access.lexeme = current_state;
+        access.lexeme_name = get_lexeme_name( &access.lexeme );
+        tokens.push( access );
+    }
+
+   tokens
     
-    //do stuff for lexing
-    print!("{}",expression);
 
 }
 
+fn get_col(c: char) -> FsmTransitions {
+
+    if c == ' ' {
+
+       _Space
+
+   } else if c.is_digit(10) {
+
+       _Integer
+
+   } else if c == '.' {
+
+       _Real
+
+   } else if c.is_alphabetic() {
+
+       _String
+
+   } else if c.is_ascii_punctuation() {
+
+       _Operator
+   } else {
+
+       _Unknown
+   }
+
+
+}
+
+fn get_lexeme_name( lexeme: &FsmTransitions ) -> String {
+
+    match lexeme {
+
+        _Space    => "SPACE".to_string(),
+        _Integer  => "INTEGER".to_string(),
+        _Real     => "REAL".to_string(),
+        _String   => "STRING".to_string(),
+        _Operator => "OPERATOR".to_string(),
+        _Unknown  => "UNKNOWN".to_string(),
+        _         => "ERROR".to_string(),
+    }
+}
