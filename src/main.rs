@@ -31,11 +31,11 @@ const STATE_TABLE: &[&[FsmTransitions]]  = &[
 ];
 
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 struct TokenType {
-    token: str,
+    token: String,
     lexeme: FsmTransitions,
-    lexeme_name: str,
+    lexeme_name: String,
 }
 
 impl Default for TokenType {
@@ -43,6 +43,7 @@ impl Default for TokenType {
         TokenType{token: "".to_string(), lexeme: _Reject, lexeme_name: "".to_string()}
     }
 }
+
 /*fn build_token(token: String, lexeme: u32, lexeme_name: String) -> TokenType {
    TokenType{
        token,
@@ -115,20 +116,23 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
     let mut current_state: FsmTransitions = _Reject;
     let mut current_token = String::new();
 
+    //loop through characters
     for c in expression.chars() {
 
         col = get_col( c );
        // println!("Collum is {} .", col as i32);
        current_state = STATE_TABLE[current_state as usize][col as usize];
 
-       if( current_state == _Reject ) {
+       //for reject
+       if current_state == _Reject  {
 
-           if( prev_state != _Space ){
+           
+           if prev_state != _Space{
 
-               access.token = current_token;
+               access.token = current_token.clone();
                access.lexeme = prev_state;
                access.lexeme_name = get_lexeme_name( &access.lexeme );
-               tokens.push( access );
+               tokens.push( access.clone() );
            }
            current_token = "".to_string();
        } else {
@@ -139,10 +143,10 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
     }
 
     if current_state != _Space && current_token != "" {
-        access.token = current_token;
+        access.token = current_token.clone();
         access.lexeme = current_state;
         access.lexeme_name = get_lexeme_name( &access.lexeme );
-        tokens.push( access );
+        tokens.push( access.clone());
     }
 
    tokens
