@@ -70,9 +70,10 @@ fn main() {
     }*/
 
 
+    // println!("Current Working Directory: {:?}", env::current_dir());
 
     let expression = convert_file_to_string( get_file_name() );
-    let mut token: Vec<TokenType> = lexer( &expression );
+    let token: Vec<TokenType> = lexer( &expression );
 
     for tok in token.iter() {
         println!("{}        {}", tok.lexeme_name, tok.token);
@@ -119,7 +120,7 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
   
     let mut access = TokenType::default();
     let mut tokens: Vec<TokenType> = Vec::new();
-    let mut col: FsmTransitions = _Reject;
+    let mut col: FsmTransitions;
     let mut prev_state: FsmTransitions = _Reject;
     let mut current_state: FsmTransitions = _Reject;
     let mut current_token = String::new();
