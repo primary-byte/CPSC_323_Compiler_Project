@@ -29,7 +29,7 @@ const STATE_TABLE: &[&[FsmTransitions]]  = &[
     &[ _Operator, _Reject,  _Reject,  _Reject,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 3
     &[ _String,   _String,  _Reject,  _String,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 4
     &[ _Unknown,  _Unknown, _Unknown, _Unknown,  _Unknown, _Unknown, _Reject,  _Reject,  _Reject    ], //State 5
-    &[ _Reject,    _Reject,  _Reject, _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 6
+    &[ _Space,    _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 6
     &[ _Comment,  _Comment, _Comment, _Comment,  _Comment, _Comment, _Comment, _Reject,  _Comment   ], //State 7
     &[ _Reject,   _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Separator ]  //State 8
 ];
@@ -124,24 +124,32 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
     let mut prev_state: FsmTransitions = _Reject;
     let mut current_state: FsmTransitions = _Reject;
     let mut current_token = String::new();
-
+    let mut index = 0;
+    //let mut current_char = expression.chars();
     //loop through characters
-    for c in expression.chars() {
+     
+    while index != expression.len() {
 
-        col = get_col( c );
+        col = get_col( match expression.chars().nth(index) {
+            Some(c) => c,
+            None    => ' '
+        });
        // println!("Collum is {} .", col as i32);
        current_state = STATE_TABLE[current_state as usize][col as usize];
 
        //for reject
        if current_state == _Reject  {
-
            
            if prev_state != _Space {
                
                if prev_state == _Comment {
 
-                   current_token.push( c.clone() );
-
+                   current_token.push(match expression.chars().nth(index){
+                       Some(c) => c,
+                       None    => ' '
+                   });
+                   
+                   index = index + 1;
                }
 
                access.token = current_token.clone();
@@ -151,10 +159,16 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
            }
            
            current_token = "".to_string();
-
-       
+                  
        } else {
-           current_token.push( c.clone() );
+           
+           current_token.push(match expression.chars().nth(index) {
+               Some(c) => c,
+               None    => ' ' 
+           });
+
+           index = index + 1;
+
        } 
        
        prev_state = current_state;
@@ -190,7 +204,7 @@ fn get_col(c: char) -> FsmTransitions {
 
        _Real
 
-   } else if c.is_alphabetic() {
+   }else if c.is_alphabetic() {
 
        _String
 
@@ -212,6 +226,8 @@ fn get_col(c: char) -> FsmTransitions {
           '}'  => _Separator,
           '['  => _Separator,
           ']'  => _Separator,
+          '('  => _Separator,
+          ')'  => _Separator,
           ','  => _Separator,
           ':'  => _Separator,
           ';'  => _Separator,
