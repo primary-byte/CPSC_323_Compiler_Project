@@ -66,6 +66,7 @@ fn main() {
     }*/
 
 
+    // println!("Current Working Directory: {:?}", env::current_dir());
 
     let expression = convert_file_to_string( get_file_name() );
     let mut token: Vec<TokenType> = lexer( &expression );
