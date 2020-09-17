@@ -24,14 +24,14 @@ enum FsmTransitions {
 
 const STATE_TABLE: &[&[FsmTransitions]]  = &[
     &[ _Reject,   _Integer, _Real,    _Operator, _String,  _Unknown, _Space,   _Comment, _Separator ], //Default
-    &[ _Integer,  _Integer, _Real,    _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 1
+    &[ _Integer,  _Integer, _Real,    _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 1 
     &[ _Real,     _Real,    _Unknown, _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 2
     &[ _Operator, _Reject,  _Reject,  _Reject,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 3
     &[ _String,   _String,  _Reject,  _String,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 4
     &[ _Unknown,  _Unknown, _Unknown, _Unknown,  _Unknown, _Unknown, _Reject,  _Reject,  _Reject    ], //State 5
     &[ _Reject,    _Reject,  _Reject, _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 6
     &[ _Comment,  _Comment, _Comment, _Comment,  _Comment, _Comment, _Comment, _Reject,  _Comment   ], //State 7
-    &[ _Reject,   _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Separator ]
+    &[ _Reject,   _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Separator ]  //State 8
 ];
 
 
@@ -138,12 +138,21 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
            
            if prev_state != _Space {
                
+               if prev_state == _Comment {
+
+                   current_token.push( c.clone() );
+
+               }
+
                access.token = current_token.clone();
                access.lexeme = prev_state;
                access.lexeme_name = get_lexeme_name( &access.lexeme );
                tokens.push( access.clone() );
            }
+           
            current_token = "".to_string();
+
+       
        } else {
            current_token.push( c.clone() );
        } 
