@@ -69,6 +69,10 @@ fn main() {
 
     let expression = convert_file_to_string( get_file_name() );
     let mut token: Vec<TokenType> = lexer( &expression );
+
+    for tok in token.iter() {
+        println!("{}        {}", tok.lexeme_name, tok.token);
+    }
 }
 
 fn get_file_name() -> String {
