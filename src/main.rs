@@ -17,17 +17,21 @@ enum FsmTransitions {
     _String,
     _Unknown,
     _Space,
+    _Comment,
+    _Separator
 
 }
 
 const STATE_TABLE: &[&[FsmTransitions]]  = &[
-    &[ _Reject,   _Integer, _Real,    _Operator, _String,  _Unknown, _Space ], //Default
-    &[ _Integer,  _Integer, _Real,    _Reject,   _Reject,  _Reject,  _Reject], //State 1
-    &[ _Real,     _Real,    _Unknown, _Reject,   _Reject,  _Reject,  _Reject], //State 2
-    &[ _Operator, _Reject,  _Reject,  _Reject,   _String,  _Reject,  _Reject], //State 3
-    &[ _String,   _String,  _Reject,  _String,   _String,  _Reject,  _Reject], //State 4
-    &[ _Unknown,  _Unknown, _Unknown, _Unknown,  _Unknown, _Unknown, _Reject], //State 5
-    &[ _Space,    _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject], //State 6
+    &[ _Reject,   _Integer, _Real,    _Operator, _String,  _Unknown, _Space,   _Comment, _Separator ], //Default
+    &[ _Integer,  _Integer, _Real,    _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 1
+    &[ _Real,     _Real,    _Unknown, _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 2
+    &[ _Operator, _Reject,  _Reject,  _Reject,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 3
+    &[ _String,   _String,  _Reject,  _String,   _String,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 4
+    &[ _Unknown,  _Unknown, _Unknown, _Unknown,  _Unknown, _Unknown, _Reject,  _Reject,  _Reject    ], //State 5
+    &[ _Reject,    _Reject,  _Reject, _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Reject    ], //State 6
+    &[ _Comment,  _Comment, _Comment, _Comment,  _Comment, _Comment, _Comment, _Reject,  _Comment   ], //State 7
+    &[ _Reject,   _Reject,  _Reject,  _Reject,   _Reject,  _Reject,  _Reject,  _Reject,  _Separator ]
 ];
 
 
@@ -131,8 +135,8 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
        if current_state == _Reject  {
 
            
-           if prev_state != _Space{
-
+           if prev_state != _Space {
+               
                access.token = current_token.clone();
                access.lexeme = prev_state;
                access.lexeme_name = get_lexeme_name( &access.lexeme );
@@ -140,7 +144,7 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
            }
            current_token = "".to_string();
        } else {
-           current_token.push( c );
+           current_token.push( c.clone() );
        } 
        
        prev_state = current_state;
@@ -160,7 +164,11 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
 
 fn get_col(c: char) -> FsmTransitions {
 
-    if c == ' ' {
+    if c == '!' {
+        
+        _Comment
+    
+    } else if c == ' ' {
 
        _Space
 
@@ -176,12 +184,38 @@ fn get_col(c: char) -> FsmTransitions {
 
        _String
 
+   } /* else if c ==  '{' | '}'/* | ')' | '{' | '}' | '[' | ']' | ',' | ':' | ';' | '\n'*/ {
+       
+       _Separator 
+   
    } else if c.is_ascii_punctuation() {
 
        _Operator
-   } else {
 
-       _Unknown
+   }*/ else {
+
+      match c {
+
+          '$'  => _String   ,
+          '\'' => _Separator,
+          '{'  => _Separator,
+          '}'  => _Separator,
+          '['  => _Separator,
+          ']'  => _Separator,
+          ','  => _Separator,
+          ':'  => _Separator,
+          ';'  => _Separator,
+          '\n' => _Space    ,
+          '*'  => _Operator ,
+          '+'  => _Operator ,
+          '-'  => _Operator ,
+          '='  => _Operator ,
+          '/'  => _Operator ,
+          '>'  => _Operator ,
+          '<'  => _Operator ,
+          '%'  => _Operator ,
+          _    => _Unknown
+      }
    }
 
 
@@ -191,12 +225,14 @@ fn get_lexeme_name( lexeme: &FsmTransitions ) -> String {
 
     match lexeme {
 
-        _Space    => "SPACE".to_string(),
-        _Integer  => "INTEGER".to_string(),
-        _Real     => "REAL".to_string(),
-        _String   => "STRING".to_string(),
-        _Operator => "OPERATOR".to_string(),
-        _Unknown  => "UNKNOWN".to_string(),
-        _         => "ERROR".to_string(),
+        _Comment   => "COMMENT".to_string(),
+        _Space     => "SPACE".to_string(),
+        _Separator => "SEPARATOR".to_string(),
+        _Integer   => "INTEGER".to_string(),
+        _Real      => "REAL".to_string(),
+        _String    => "STRING".to_string(),
+        _Operator  => "OPERATOR".to_string(),
+        _Unknown   => "UNKNOWN".to_string(),
+        _          => "ERROR".to_string(),
     }
 }
