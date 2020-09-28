@@ -18,7 +18,9 @@ enum FsmTransitions {
     _Unknown,
     _Space,
     _Comment,
-    _Separator
+    _Separator,
+    _Keyword,
+    _Identifier
 
 }
 
@@ -48,29 +50,7 @@ impl Default for TokenType {
     }
 }
 
-/*fn build_token(token: String, lexeme: u32, lexeme_name: String) -> TokenType {
-   TokenType{
-       token,
-       lexeme,
-       lexeme_name,
-   }
-}*/
-
 fn main() {
-   /*
-    println!("State Table: ");
-
-    //rows
-    for row in STATE_TABLE.iter(){        
-        //columns
-        for value in row.iter(){
-            print!(" {:?}", value);
-        }
-        print!("\n"); //new line
-    }*/
-
-
-    // println!("Current Working Directory: {:?}", env::current_dir());
 
     let expression = convert_file_to_string( get_file_name() );
     let token: Vec<TokenType> = lexer( &expression );
@@ -125,7 +105,8 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
     let mut current_state: FsmTransitions = _Reject;
     let mut current_token = String::new();
     let mut index = 0;
-    //let mut current_char = expression.chars();
+    
+    
     //loop through characters
      
     while index != expression.len() {
@@ -135,7 +116,7 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
             None    => ' '
         });
        // println!("Collum is {} .", col as i32);
-       current_state = STATE_TABLE[current_state as usize][col as usize];
+       current_state = STATE_TABLE[ current_state as usize ][ col as usize ];
 
        //for reject
        if current_state == _Reject  {
@@ -151,9 +132,17 @@ fn lexer( expression: &String ) -> Vec<TokenType> {
                    
                    index = index + 1;
                }
+               
+               
+               //check if string is identifier or keyword
+
+               if prev_state == _String { 
+
+                   prev_state = get_string_type( current_token.clone() );
+               }
 
                access.token = current_token.clone();
-               access.lexeme = prev_state;
+               access.lexeme = prev_state; 
                access.lexeme_name = get_lexeme_name( &access.lexeme );
                tokens.push( access.clone() );
            }
@@ -208,15 +197,7 @@ fn get_col(c: char) -> FsmTransitions {
 
        _String
 
-   } /* else if c ==  '{' | '}'/* | ')' | '{' | '}' | '[' | ']' | ',' | ':' | ';' | '\n'*/ {
-       
-       _Separator 
-   
-   } else if c.is_ascii_punctuation() {
-
-       _Operator
-
-   }*/ else {
+   } else {
 
       match c {
 
@@ -240,6 +221,7 @@ fn get_col(c: char) -> FsmTransitions {
           '>'  => _Operator ,
           '<'  => _Operator ,
           '%'  => _Operator ,
+          '\t' => _Space    ,
           _    => _Unknown
       }
    }
@@ -251,14 +233,45 @@ fn get_lexeme_name( lexeme: &FsmTransitions ) -> String {
 
     match lexeme {
 
-        _Comment   => "COMMENT".to_string(),
-        _Space     => "SPACE".to_string(),
-        _Separator => "SEPARATOR".to_string(),
-        _Integer   => "INTEGER".to_string(),
-        _Real      => "REAL".to_string(),
-        _String    => "STRING".to_string(),
-        _Operator  => "OPERATOR".to_string(),
-        _Unknown   => "UNKNOWN".to_string(),
-        _          => "ERROR".to_string(),
+        _Comment   => "COMMENT"   .to_string(),
+        _Space     => "SPACE"     .to_string(),
+        _Separator => "SEPARATOR" .to_string(),
+        _Integer   => "INTEGER"   .to_string(),
+        _Real      => "REAL"      .to_string(),
+        _String    => "STRING"    .to_string(),
+        _Operator  => "OPERATOR"  .to_string(),
+        _Unknown   => "UNKNOWN"   .to_string(),
+        _Keyword   => "KEYWORD"   .to_string(),
+        _Identifier => "IDENTIFIER" .to_string(),
+        _          => "ERROR"     .to_string(),
+    }
+}
+
+fn get_string_type( token: String ) -> FsmTransitions {
+
+    match token.as_str(){
+
+        "int"      => _Keyword,
+        "float"    => _Keyword,
+        "bool"     => _Keyword,
+        "true"     => _Keyword,
+        "false"    => _Keyword,
+        "if"       => _Keyword,
+        "else"     => _Keyword,
+        "then"     => _Keyword,
+        "endif"    => _Keyword,
+        "while"    => _Keyword,
+        "whileend" => _Keyword,
+        "do"       => _Keyword,
+        "doend"    => _Keyword,
+        "for"      => _Keyword,
+        "forend"   => _Keyword,
+        "input"    => _Keyword,
+        "output"   => _Keyword,
+        "and"      => _Keyword,
+        "or"       => _Keyword,
+        "not"      => _Keyword,
+        _          => _Identifier
+
     }
 }
