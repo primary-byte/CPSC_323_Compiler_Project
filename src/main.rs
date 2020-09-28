@@ -233,45 +233,28 @@ fn get_lexeme_name( lexeme: &FsmTransitions ) -> String {
 
     match lexeme {
 
-        _Comment   => "COMMENT"   .to_string(),
-        _Space     => "SPACE"     .to_string(),
-        _Separator => "SEPARATOR" .to_string(),
-        _Integer   => "INTEGER"   .to_string(),
-        _Real      => "REAL"      .to_string(),
-        _String    => "STRING"    .to_string(),
-        _Operator  => "OPERATOR"  .to_string(),
-        _Unknown   => "UNKNOWN"   .to_string(),
-        _Keyword   => "KEYWORD"   .to_string(),
+        _Comment    => "COMMENT"    .to_string(),
+        _Space      => "SPACE"      .to_string(),
+        _Separator  => "SEPARATOR"  .to_string(),
+        _Integer    => "INTEGER"    .to_string(),
+        _Real       => "REAL"       .to_string(),
+        _String     => "STRING"     .to_string(),
+        _Operator   => "OPERATOR"   .to_string(),
+        _Unknown    => "UNKNOWN"    .to_string(),
+        _Keyword    => "KEYWORD"    .to_string(),
         _Identifier => "IDENTIFIER" .to_string(),
-        _          => "ERROR"     .to_string(),
+        _           => "ERROR"      .to_string(),
     }
 }
 
 fn get_string_type( token: String ) -> FsmTransitions {
 
-    match token.as_str(){
+    let keyword_vec = vec![ "int"  , "float", "bool"  , "true" , "false"   , "if" ,
+                            "else" , "then" , "endif" , "while", "whileend", "do" ,
+                            "doend", "for"  , "forend", "input", "output"  , "and",
+                            "or"   , "not"                                         ];
 
-        "int"      => _Keyword,
-        "float"    => _Keyword,
-        "bool"     => _Keyword,
-        "true"     => _Keyword,
-        "false"    => _Keyword,
-        "if"       => _Keyword,
-        "else"     => _Keyword,
-        "then"     => _Keyword,
-        "endif"    => _Keyword,
-        "while"    => _Keyword,
-        "whileend" => _Keyword,
-        "do"       => _Keyword,
-        "doend"    => _Keyword,
-        "for"      => _Keyword,
-        "forend"   => _Keyword,
-        "input"    => _Keyword,
-        "output"   => _Keyword,
-        "and"      => _Keyword,
-        "or"       => _Keyword,
-        "not"      => _Keyword,
-        _          => _Identifier
+    if keyword_vec.contains( &token.as_str() ) { return _Keyword } else { return _Identifier };
 
-    }
+   
 }
