@@ -3,6 +3,7 @@
  pub use fsm::FsmTransitions;
  pub use fsm::FsmTransitions::*;
 
+ //implement deep copy
 #[derive(Clone)]
 pub struct TokenType {
     pub token: String,
@@ -10,6 +11,7 @@ pub struct TokenType {
     pub lexeme_name: String,
 }
 
+//default state
 impl Default for TokenType {
     fn default() -> TokenType {
         TokenType {

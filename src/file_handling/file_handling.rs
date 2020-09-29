@@ -11,7 +11,9 @@ use std::io;
 pub fn get_file_name(count: &mut i32) -> String {
     //check for command line arguments
     let args: Vec<String> = env::args().collect();
-    //if we have command line argument then use that instead of asking the user
+    //if we have command line argument then use that instead of asking the user.print!
+    //  first returned will be the input file, second will be the output file
+
     if args.len() > 1 && *count == 0 {
         *count = 1;
          return args[1].to_string(); 
@@ -37,6 +39,7 @@ pub fn get_file_name(count: &mut i32) -> String {
     file_name
 }
 
+//read a file to a string and return the string
 pub fn convert_file_to_string(file_name: String) -> String {
     let mut contents = String::new();
 
@@ -48,6 +51,7 @@ pub fn convert_file_to_string(file_name: String) -> String {
     contents
 }
 
+//write a given vector of tokens to a given file
 pub fn write_to_file(file_name: String, token: Vec< lexer::TokenType > ){
 
     //let mut line: String;
@@ -58,6 +62,7 @@ pub fn write_to_file(file_name: String, token: Vec< lexer::TokenType > ){
         .open(file_name.trim())
         .unwrap();
 
+    //iterate over tokens
     for tok in token.iter() {
        let line = format!( "{}         {}", &tok.lexeme_name, &tok.token);
        if let Err(e) = writeln!(file, "{:?}", line ) {

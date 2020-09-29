@@ -1,4 +1,6 @@
 pub use FsmTransitions::*;
+
+//derive operations to perform deep copies of the enum later
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FsmTransitions {
     _Reject,
@@ -14,6 +16,7 @@ pub enum FsmTransitions {
     _Identifier,
 }
 
+//verbosely lay out the state table for our FSM Transitions to iterate over
 pub const STATE_TABLE: &[&[FsmTransitions]] = &[
     &[
         _Reject, _Integer, _Real, _Operator, _String, _Unknown, _Space, _Comment, _Separator,

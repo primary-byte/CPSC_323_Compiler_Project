@@ -2,27 +2,31 @@
 pub mod tokens;
 pub use tokens::*;
 
-
+//parse a given string into a vector of tokens via use of FSM
+// to modify change "fsm.rs"
 pub fn lexer(expression: &String) -> Vec<TokenType> {
-    let mut access = TokenType::default();
-    let mut tokens: Vec<TokenType> = Vec::new();
-    let mut col: FsmTransitions;
-    let mut prev_state: FsmTransitions = _Reject;
-    let mut current_state: FsmTransitions = _Reject;
-    let mut current_token = String::new();
+    let mut access = TokenType::default();          
+    let mut tokens: Vec<TokenType> = Vec::new();    //stores tokens previously collected
+    let mut col: FsmTransitions;                    //current column of Table
+    let mut prev_state: FsmTransitions = _Reject;   //Previous state we were in
+    let mut current_state: FsmTransitions = _Reject;//Current state we are in
+    let mut current_token = String::new();          //current token we are working on
     let mut index = 0;
+    
     //loop through characters
-
     while index != expression.len() {
         col = get_col(match expression.chars().nth(index) {
             Some(c) => c,
             None => ' ',
         });
+
+        //Debug code here
         // println!("Collum is {} .", col as i32);
         current_state = fsm::STATE_TABLE[current_state as usize][col as usize];
 
-        //for reject
+        //for rejection state
         if current_state == _Reject {
+            //check precursor states for validity, if not found then continue to next
             if prev_state != _Space {
                 if prev_state == _Comment {
                     current_token.push(match expression.chars().nth(index) {
@@ -39,7 +43,8 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
                     prev_state = get_string_type(current_token.clone());
                 }
 
-                access.token = current_token.clone();
+                //add the valid token
+                access.token = current_token;
                 access.lexeme = prev_state;
                 access.lexeme_name = get_lexeme_name( &access.lexeme );
                 tokens.push(access.clone());
@@ -68,6 +73,7 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
     tokens
 }
 
+//use our state table and enums with match to make pretty things out of ugly code
 fn get_col(c: char) -> FsmTransitions {
     if c.is_digit(10) {
         _Integer
@@ -105,6 +111,7 @@ fn get_col(c: char) -> FsmTransitions {
     }
 }
 
+//use enums with match to make pretty things out of ugly code
 fn get_lexeme_name(lexeme: &FsmTransitions) -> String {
     match lexeme {
         _Comment => "COMMENT".to_string(),
@@ -121,6 +128,7 @@ fn get_lexeme_name(lexeme: &FsmTransitions) -> String {
     }
 }
 
+//pick out keywords and return the correct transition to the FSM
 fn get_string_type(token: String) -> FsmTransitions {
     let keyword_vec = vec![
         "int", "float", "bool", "true", "false", "if", "else", "then", "endif", "while",
