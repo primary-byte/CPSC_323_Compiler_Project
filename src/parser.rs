@@ -38,6 +38,8 @@ impl ParseNode {
 pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
     //start at root node and call recursive function to parse expressions
 
+    print!("DEBUG: Recursively parsing...\n");
+
     parse_expression(&token_list, 0).and_then(|(result_list, iterations)| {
         //check to see we parsed the whole list successfully
         if iterations == token_list.len() {
@@ -58,12 +60,18 @@ fn parse_expression(
     token_list: &Vec<TokenType>,
     position: usize,
 ) -> Result<(ParseNode, usize), String> {
+
+    print!("DEBUG: Entering fn parse_expression...\n");
+
     //parse the first id or summand
     //if an id then parse_summand will handle this also
     let (node_summand, next_position) = parse_summand(token_list, position)?;
 
     //get current working token, then match it
     let current_token = &token_list[position + 1];
+
+    println!("DEBUG: Matching token {} at position {} in fn parse_expression...\n", current_token.token.as_str(), position + 1);
+
     match current_token.token.as_str() {
         "+" => {
             //recurse on the expression
@@ -105,10 +113,16 @@ fn parse_summand(
     token_list: &Vec<TokenType>,
     position: usize,
 ) -> Result<(ParseNode, usize), String> {
+
+    print!("DEBUG: Entering fn parse_summand...\n");
+
     //recursive parse terminals
     let (node_terminal, next_position) = parse_terminal(token_list, position)?;
     //work on next token
     let current_token = &token_list[position + 1];
+
+    println!("DEBUG: Matching token {} at position {} in fn parse_summand...\n", current_token.token.as_str(), position + 1);
+    
     match current_token.token.as_str() {
         "*" => {
             //recuse on summand again
@@ -143,12 +157,16 @@ fn parse_terminal(
     token_list: &Vec<TokenType>,
     position: usize,
 ) -> Result<(ParseNode, usize), String> {
+
+    print!("DEBUG: Entering fn parse_terminal...\n");
+    
     //get current token or error message
     let current_token: &TokenType = token_list.get(position).ok_or(String::from(
         "Unexpected end of input, expected parenthesis or number",
     ))?;
 
-    println!("{}", current_token.lexeme_name.as_str());
+    println!("DEBUG: Matching token {}'s lexeme name as {} at position {} in fn parse_terminal...\n", current_token.token.as_str(), current_token.lexeme_name.as_str(), position);
+
     match current_token.lexeme_name.as_str() {
         "INTEGER" => {
             let mut node = ParseNode::new();
