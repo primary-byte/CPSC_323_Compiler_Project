@@ -4,7 +4,7 @@
  pub use fsm::FsmTransitions::*;
 
  //implement deep copy
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TokenType {
     pub token: String,
     pub lexeme: fsm::FsmTransitions,

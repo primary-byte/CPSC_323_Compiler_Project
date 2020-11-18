@@ -1,18 +1,18 @@
 #[path = "../tokens/tokens.rs"]
-use crate::file_handling::*;
+use crate::file_handling::lexer::*;
 use std::iter::Peekable; //for peeking ahead without popping
 
 
 //contains grammar items in our language TO REMOVE LATER
-#[derive(Debug, Clone)]
-pub enum GrammarItem {
+//#[derive(Debug, Clone)]
+/*pub enum GrammarItem {
     Product,
     Sum,
     Sub,
     Div,
     Number(u64),
     Paren,
-}
+}*/
 
 //node in the parse tree
 #[derive(Debug, Clone)]
@@ -37,20 +37,21 @@ impl ParseNode {
 //  Input: Vector of tokens (token_list)
 //  Output: Result tuple of ParseNode (a parse tree) and an error message if necessary 
 //  via the Err builtin function
-pub fn parse(token_list: &Vec<TokenType>) -> Result(ParseNode, String) {
+pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode,  String> {
     //start at root node and call recursive function to parse expressions
     
-    let (resultList,iterations) = parse_expression(&token_list, 0);
+    parse_expression(&token_list, 0).and_then(|(resultList,iterations)|{
     //check to see we parsed the whole list successfully
-    if (iterations == token_list.length())
-    {
-        Ok(resultList);
-    }
+        if iterations == token_list.len(){
+            Ok(resultList)
+        }
     //error if we did not parse successfully
-    else
-    {
-        Err(format!("Unexpected end of input, {:?} at {}", token_list[iterations], iterations));
-    }
+        else {
+            Err(format!(
+                "Expected end of input", 
+            ))
+        }
+    })
 }
 
 
@@ -58,19 +59,19 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result(ParseNode, String) {
 //  Input: Vector of tokens (token_list), Position in list
 //  Output: Result tuple of ParseNode (a parse tree), position in list, and an error message if necessary 
 //  via the Err builtin function
-fn parse_expression((token_list, position): (&Vec<tokenType>, usize)) -> Result<(ParseNode, usize), String>{
+fn parse_expression(token_list: &Vec<TokenType>, position: usize) -> Result<(ParseNode, usize), String>{
     //parse the first id or summand
     //if an id then parse_summand will handle this also
-    let (node_summand, next_position) = parse_summand(token_list, position);
+    let (node_summand, next_position) = parse_summand(token_list, position)?;
 
     //get current working token, then match it
-    let currentToken = token_list.get(next_position);
+    let currentToken = &token_list[position + 1];
     match currentToken.token.as_str() {
-        Some("+") => {
+        "+" => {
             //recurse on the expression
             //create new + node
             let mut sumNode = ParseNode::new();
-            sumNode.entry = '+';
+            sumNode.entry = '+'.to_string();
             //push onto vector/stack
             sumNode.children.push(node_summand);
             //recurse time!
@@ -79,11 +80,11 @@ fn parse_expression((token_list, position): (&Vec<tokenType>, usize)) -> Result<
             sumNode.children.push(rightSide);
             Ok((sumNode, newPosition))
         }
-        Some('-') => {
+        "-" => {
             //recurse on the expression
             //create new - node
             let mut minusNode = ParseNode::new();
-            minusNode.entry = '-';
+            minusNode.entry = '-'.to_string();
             //push onto vector/stack
             minusNode.children.push(node_summand);
             //recurse time!
@@ -102,26 +103,26 @@ fn parse_expression((token_list, position): (&Vec<tokenType>, usize)) -> Result<
 //  Input: tupleVector of tokens (token_list), Position in list
 //  Output: Result tuple of ParseNode (a parse tree), position in list, and an error message if necessary 
 //  via the Err builtin function
-fn parse_summand((token_list, position): (&Vec<tokenType>, usize)) -> Result<(ParseNode, usize), String>{
+fn parse_summand(token_list: &Vec<TokenType>, position: usize) -> Result<(ParseNode, usize), String> {
  
     //recursive parse terminals
     let (node_terminal, next_position) = parse_terminal(token_list, position)?;
     //work on next token
-    let currentToken = token_list.get(next_position);
+    let currentToken = &token_list[position+1];
     match currentToken.token.as_str(){
-        Some('*') =>{
+        "*" =>{
             //recuse on summand again
             let mut multNode = ParseNode::new();
-            multNode.entry = '*';
+            multNode.entry = '*'.to_string();
             multNode.children.push(node_terminal);
             let (rightSide, newPosition) = parse_summand(token_list, next_position + 1)?;
             multNode.children.push(rightSide);
             Ok((multNode, newPosition))
         }
-        Some('/') =>{
+        "/" =>{
             //recuse on summand again
             let mut divNode = ParseNode::new();
-            divNode.entry = '/';
+            divNode.entry = '/'.to_string();
             divNode.children.push(node_terminal);
             let (rightSide, newPosition) = parse_summand(token_list, next_position + 1)?;
             divNode.children.push(rightSide);
@@ -129,7 +130,7 @@ fn parse_summand((token_list, position): (&Vec<tokenType>, usize)) -> Result<(Pa
         }
         _=> {
             //base case we are done here
-            Ok((node_summand, next_position))
+            Ok((node_terminal, next_position))
         }
     }
 }
@@ -138,11 +139,46 @@ fn parse_summand((token_list, position): (&Vec<tokenType>, usize)) -> Result<(Pa
 //  Input: Vector of tokens (token_list), Position in list
 //  Output: Result tuple of ParseNode (a parse tree), position in list, and an error message if necessary 
 //  via the Err builtin function
-fn parse_term((token_list, position): (&Vec<tokenType>, usize)) -> Result<(ParseNode, usize), String>{
+fn parse_terminal(token_list: &Vec<TokenType>, position: usize) -> Result<(ParseNode, usize), String>{
     //get current token or error message
     let currentToken: &TokenType = token_list.get(position).ok_or(String::from("Unexpected end of input, expected parenthesis or number",))?;
-    match currentToken.token.as_str() {
-        //breaking for lunch, pushing here in case anyone else wants to work on it.
-
+    
+    if is_string_numeric(currentToken.token.clone()) {
+    let mut node = ParseNode::new();
+    node.entry = currentToken.token.clone();
+    Ok((node, position))
+    } else if currentToken.token.as_str() == "(" {
+        parse_expression(token_list, position + 1).and_then(|(node, next_pos)| {
+             if token_list[next_pos].token.as_str() == ")" {
+                let mut paren = ParseNode::new();
+                paren.children.push(node);
+                Ok((paren, next_pos +1))
+             }else {
+                 Err(format!(
+                     "Expected {} but found {} at {}",
+                     ")",
+                     token_list[next_pos].token.as_str(),
+                     next_pos
+                 ))
+             }
+        })
+    }else {
+        Err(format!(
+            "Expected closing paren at {} but found {:?}",
+            position,
+            token_list[position+1].token.as_str()
+        ))
     }
+
+    
 }
+
+fn is_string_numeric(str: String) -> bool {
+    for c in str.chars() {
+        if !c.is_numeric() {
+            return false;
+        }
+    }
+    return true;
+}
+

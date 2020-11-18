@@ -14,8 +14,8 @@ fn main() {
     let token: Vec< file_handling::lexer::TokenType> = file_handling::lexer::lexer(&expression);
 
     //write vector of tokens to specified file
-    file_handling::write_to_file( file_handling::get_file_name(&mut count), token );
+    //file_handling::write_to_file( file_handling::get_file_name(&mut count), token );
 
-    print(parser::parse(token));
+    println!("{:?}", parser::parse(&token));
     
 }
