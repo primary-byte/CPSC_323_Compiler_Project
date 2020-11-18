@@ -1,5 +1,6 @@
 #[path = "file_handling/file_handling.rs"]
 mod file_handling;
+mod parser;
 //use file_handling::tokens::*; not needed right now
 
 fn main() {
@@ -14,5 +15,7 @@ fn main() {
 
     //write vector of tokens to specified file
     file_handling::write_to_file( file_handling::get_file_name(&mut count), token );
+
+    print(parser::parse(token));
     
 }
