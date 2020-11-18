@@ -63,8 +63,9 @@ fn parse_expression(
     let (node_summand, next_position) = parse_summand(token_list, position)?;
 
     //get current working token, then match it
-    let current_token = &token_list[position + 1];
-    match current_token.token.as_str() {
+    if next_position < token_list.len() {
+        let current_token = &token_list[next_position];
+        match current_token.token.as_str() {
         "+" => {
             //recurse on the expression
             //create new + node
@@ -94,7 +95,12 @@ fn parse_expression(
             //base case we are done here
             Ok((node_summand, next_position))
         }
+        }
+    } else {
+        Ok((node_summand, next_position))
     }
+    
+    
 }
 
 //summand/id parse function. This is the second recursive function to be called and will call the others as needed
@@ -108,8 +114,9 @@ fn parse_summand(
     //recursive parse terminals
     let (node_terminal, next_position) = parse_terminal(token_list, position)?;
     //work on next token
-    let current_token = &token_list[position + 1];
-    match current_token.token.as_str() {
+    if next_position < token_list.len() {
+        let current_token = &token_list[next_position];
+        match current_token.token.as_str() {
         "*" => {
             //recuse on summand again
             let mut mult_node = ParseNode::new();
@@ -133,6 +140,10 @@ fn parse_summand(
             Ok((node_terminal, next_position))
         }
     }
+    } else {
+        Ok((node_terminal, next_position))
+    }
+    
 }
 
 // terminal parse function. This is the third recursive function to be called and will call the others as needed
@@ -153,7 +164,7 @@ fn parse_terminal(
         "INTEGER" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
-            Ok((node, position))
+            Ok((node, position+1))
         }
         "SEPARATOR" => parse_expression(token_list, position + 1).and_then(|(node, next_pos)| {
             if token_list[next_pos].token.as_str() == ")" {
