@@ -62,7 +62,10 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
 
         prev_state = current_state;
     }
-
+    if current_state == _String {
+                    current_state = get_string_type(current_token.clone());
+                }
+                
     if current_state != _Space && current_token != "" {
         access.token = current_token.clone();
         access.lexeme = current_state;
