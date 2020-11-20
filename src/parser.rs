@@ -27,8 +27,8 @@ impl ParseNode {
         ParseNode {
             children: Vec::new(),
             entry: "(".to_string(),
-            //default to expression
-            rule:"<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term>".to_string(),
+            //default to declarative
+            rule:"<Statement> -> <Declarative> ".to_string(),
         }
     }
 }
@@ -67,6 +67,8 @@ fn parse_declarative(
             "IDENTIFIER" => {
                 let mut node_declar = ParseNode::new();
                 node_declar.entry = current_token.token.clone();
+                //ID rule
+                node_declar.rule = "<Assign> -> <ID> = <Expression>".to_string();
                 node_declar.children.push(node_assign);
 
                 Ok((node_declar, next_position + 1))
@@ -91,6 +93,7 @@ fn parse_assignment(
             "=" => {
                 let mut assign_node = ParseNode::new();
                 assign_node.entry = '='.to_string();
+                assign_node.rule = "<Statement> -> <Assign>".to_string();
                 assign_node.children.push(node_expression);
 
                 let (right_side, new_position) = parse_assignment(token_list, next_position + 1)?;
@@ -125,6 +128,7 @@ fn parse_expression(
                 //create new + node
                 let mut sum_node = ParseNode::new();
                 sum_node.entry = '+'.to_string();
+                sum_node.rule = "<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term> ".to_string();
                 //push onto vector/stack
                 sum_node.children.push(node_summand);
                 //recurse time!
@@ -138,6 +142,7 @@ fn parse_expression(
                 //create new - node
                 let mut minus_node = ParseNode::new();
                 minus_node.entry = '-'.to_string();
+                minus_node.rule = "<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term> ".to_string();
                 //push onto vector/stack
                 minus_node.children.push(node_summand);
                 //recurse time!
@@ -173,6 +178,7 @@ fn parse_summand(
                 //recuse on summand again
                 let mut mult_node = ParseNode::new();
                 mult_node.entry = '*'.to_string();
+                mult_node.rule = "<Term> -> <Term> * <Factor> | <Term> / <Factor> | <Factor>".to_string();
                 mult_node.children.push(node_terminal);
                 let (right_side, new_position) = parse_summand(token_list, next_position + 1)?;
                 mult_node.children.push(right_side);
@@ -182,6 +188,7 @@ fn parse_summand(
                 //recuse on summand again
                 let mut div_node = ParseNode::new();
                 div_node.entry = '/'.to_string();
+                div_node.rule = "<Term> -> <Term> * <Factor> | <Term> / <Factor> | <Factor>".to_string();
                 div_node.children.push(node_terminal);
                 let (right_side, new_position) = parse_summand(token_list, next_position + 1)?;
                 div_node.children.push(right_side);
@@ -216,16 +223,19 @@ fn parse_terminal(
         "KEYWORD" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
+            node.rule = "<Type> -> bool | float | int".to_string();
             Ok((node, position + 1))
         }
         "IDENTIFIER" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
+            node.rule = "<ID> -> id".to_string();
             Ok((node, position + 1))
         }
         "INTEGER" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
+            node.rule = "<Factor> -> ( <Expression> ) | <ID> | <Num>".to_string();
             Ok((node, position + 1))
         }
         "SEPARATOR" => parse_expression(token_list, position + 1).and_then(|(node, next_pos)| {
