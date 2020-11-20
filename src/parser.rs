@@ -74,7 +74,7 @@ fn parse_declarative(
                 let mut node_declar = ParseNode::new();
                 node_declar.entry = current_token.token.clone();
                 //ID rule
-                node_declar.rule = "<Assign> -> <ID> = <Expression>".to_string();
+                node_declar.rule = "<Statement> -> <Declarative>".to_string();
                 node_declar.token = current_token.clone();
                 node_declar.children.push(node_assign);
 
@@ -229,7 +229,7 @@ fn parse_terminal(
     ))?;
 
     // DEBUG
-    // println!("{}", current_token.lexeme_name.as_str());
+    println!("{}", current_token.lexeme_name.as_str());
     match current_token.lexeme_name.as_str() {
         "KEYWORD" => {
             let mut node = ParseNode::new();
