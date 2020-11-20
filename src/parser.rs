@@ -19,6 +19,7 @@ pub struct ParseNode {
     pub children: Vec<ParseNode>,
     pub entry: String,
     pub rule: String,
+    pub token: TokenType,
 }
 
 //implement constructor for our parse node within the parse tree
@@ -29,6 +30,11 @@ impl ParseNode {
             entry: "(".to_string(),
             //default to declarative
             rule:"<Statement> -> <Declarative> ".to_string(),
+            token: tokens::TokenType{
+                token: "".to_string(),
+                lexeme: fsm::_Reject,
+                lexeme_name: "".to_string(),
+            },
         }
     }
 }
@@ -69,6 +75,7 @@ fn parse_declarative(
                 node_declar.entry = current_token.token.clone();
                 //ID rule
                 node_declar.rule = "<Assign> -> <ID> = <Expression>".to_string();
+                node_declar.token = current_token.clone();
                 node_declar.children.push(node_assign);
 
                 Ok((node_declar, next_position + 1))
@@ -129,6 +136,7 @@ fn parse_expression(
                 let mut sum_node = ParseNode::new();
                 sum_node.entry = '+'.to_string();
                 sum_node.rule = "<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term> ".to_string();
+                sum_node.token = current_token.clone();
                 //push onto vector/stack
                 sum_node.children.push(node_summand);
                 //recurse time!
@@ -143,6 +151,7 @@ fn parse_expression(
                 let mut minus_node = ParseNode::new();
                 minus_node.entry = '-'.to_string();
                 minus_node.rule = "<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term> ".to_string();
+                minus_node.token = current_token.clone();
                 //push onto vector/stack
                 minus_node.children.push(node_summand);
                 //recurse time!
@@ -179,6 +188,7 @@ fn parse_summand(
                 let mut mult_node = ParseNode::new();
                 mult_node.entry = '*'.to_string();
                 mult_node.rule = "<Term> -> <Term> * <Factor> | <Term> / <Factor> | <Factor>".to_string();
+                mult_node.token = current_token.clone();
                 mult_node.children.push(node_terminal);
                 let (right_side, new_position) = parse_summand(token_list, next_position + 1)?;
                 mult_node.children.push(right_side);
@@ -189,6 +199,7 @@ fn parse_summand(
                 let mut div_node = ParseNode::new();
                 div_node.entry = '/'.to_string();
                 div_node.rule = "<Term> -> <Term> * <Factor> | <Term> / <Factor> | <Factor>".to_string();
+                div_node.token = current_token.clone();
                 div_node.children.push(node_terminal);
                 let (right_side, new_position) = parse_summand(token_list, next_position + 1)?;
                 div_node.children.push(right_side);
@@ -224,23 +235,28 @@ fn parse_terminal(
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
             node.rule = "<Type> -> bool | float | int".to_string();
+            node.token = current_token.clone();
             Ok((node, position + 1))
         }
         "IDENTIFIER" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
             node.rule = "<ID> -> id".to_string();
+            node.token = current_token.clone();
             Ok((node, position + 1))
         }
         "INTEGER" => {
             let mut node = ParseNode::new();
             node.entry = current_token.token.clone();
             node.rule = "<Factor> -> ( <Expression> ) | <ID> | <Num>".to_string();
+            node.token = current_token.clone();
             Ok((node, position + 1))
         }
         "SEPARATOR" => parse_expression(token_list, position + 1).and_then(|(node, next_pos)| {
             if token_list[next_pos].token.as_str() == ")" {
                 let mut paren = ParseNode::new();
+                paren.rule = "<Factor> -> ( <Expression> ) | <ID> | <Num>".to_string();
+                paren.token = token_list[next_pos].clone();
                 paren.children.push(node);
                 Ok((paren, next_pos + 1))
             } else {
@@ -270,8 +286,9 @@ pub fn print_tree(node: &ParseNode){
         let prefix_current = if last_node {"- "} else { "| - "};
 
         //print the good stuff
-        println!("{}{}{}", prefix, prefix_current, node.entry);
-        println!("{}{}rule: {}",prefix, prefix_current, node.rule);
+        println!("\n{}{}{}", prefix, prefix_current, node.entry);
+        println!("{}{}Token: {:?}",prefix, prefix_current, node.token);
+        println!("{}{}Rule: {}",prefix, prefix_current, node.rule);
 
         //prefix logic
         let prefix_child = if last_node {"  " } else {"| "};
