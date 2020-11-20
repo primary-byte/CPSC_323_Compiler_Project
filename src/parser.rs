@@ -18,6 +18,7 @@ use crate::file_handling::lexer::*;
 pub struct ParseNode {
     pub children: Vec<ParseNode>,
     pub entry: String,
+    pub rule: String,
 }
 
 //implement constructor for our parse node within the parse tree
@@ -26,6 +27,8 @@ impl ParseNode {
         ParseNode {
             children: Vec::new(),
             entry: "(".to_string(),
+            //default to expression
+            rule:"<Expression> -> <Expression> + <Term> | <Expression> - <Term> | <Term>".to_string(),
         }
     }
 }
@@ -48,6 +51,7 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
             Err(format!("Expected end of input",))
         }
     })
+
 }
 fn parse_declarative(
     token_list: &Vec<TokenType>,
@@ -206,7 +210,8 @@ fn parse_terminal(
         "Unexpected end of input, expected parenthesis or number",
     ))?;
 
-    println!("{}", current_token.lexeme_name.as_str());
+    // DEBUG
+    // println!("{}", current_token.lexeme_name.as_str());
     match current_token.lexeme_name.as_str() {
         "KEYWORD" => {
             let mut node = ParseNode::new();
@@ -244,3 +249,39 @@ fn parse_terminal(
         )),
     }
 }
+
+//recursive pretty print function
+pub fn print_tree(node: &ParseNode){
+
+    //overload this for beauty reasons
+    fn print_tree(node: &ParseNode, prefix: String, last_node: bool){
+        
+        //check last node for end prefix
+        let prefix_current = if last_node {"- "} else { "| - "};
+
+        //print the good stuff
+        println!("{}{}{}", prefix, prefix_current, node.entry);
+        println!("{}{}rule: {}",prefix, prefix_current, node.rule);
+
+        //prefix logic
+        let prefix_child = if last_node {"  " } else {"| "};
+        let prefix = prefix + prefix_child;
+
+        //if we aren't empty call more
+        if !node.children.is_empty(){
+
+            //check last child node
+            let last_child = node.children.len() - 1;
+
+            //DO ITTTTTT
+            for (i, child) in node.children.iter().enumerate(){
+                print_tree(&child, prefix.to_string(), i == last_child)
+            }
+
+        }
+    }
+    //run the recursion
+    print_tree(node, "".to_string(), true);
+}
+
+
