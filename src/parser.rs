@@ -311,6 +311,7 @@ pub fn print_tree(node: &ParseNode){
         //get string from the node rule string vector
         let mut node_rule_string = "".to_string();
 
+        //iterate over rules and print out the right rules to a new string
         for rule in node.rule.iter().rev(){
            node_rule_string.push('\n');
            node_rule_string = node_rule_string + rule;
