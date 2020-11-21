@@ -39,17 +39,41 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
     //create stack of rule strings
     let mut rule_vector: Vec<String> = Vec::new();
 
+    //let mut iterations: usize = 0;
+    //let mut result_list = ParseNode::new();
 
-    parse_declarative(&token_list, 0, &mut rule_vector).and_then(|(result_list, iterations)| {
+    while iterations < token_list.len() {
+        parse_declarative(&token_list, iterations, &mut rule_vector).and_then(|(mut result_list, iterations)| {
+            
+        }
+    }
+
+    Ok(result_list)
+   /* parse_declarative(&token_list, 0, &mut rule_vector).and_then(|(mut result_list, iterations)| {
         //check to see we parsed the whole list successfully
-        if iterations == token_list.len() {
+        if iterations ==  token_list.len() {
+            Ok(result_list)
+        } else if iterations < token_list.len() {
+            
+            let mut new_position = iterations;
+
+            let mut additional_result = result_list;
+
+            while new_position < token_list.len() {
+                
+                result_list.children.push(parse_declarative(&token_list, new_position, &mut rule_vector )?);
+
+                println!("{}")
+
+                result_list.children.push(additional_result);
+            }
             Ok(result_list)
         }
         //error if we did not parse successfully
         else {
             Err(format!("Expected end of input",))
         }
-    })
+    })*/
 
 }
 fn parse_declarative(
