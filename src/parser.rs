@@ -1,18 +1,6 @@
-//#[path = "../tokens/tokens.rs"]
 use crate::file_handling::lexer::*;
 use std::io::Write; //string operations
-//use std::iter::Peekable; //for peeking ahead without popping not needed yet
-
-//contains grammar items in our language TO REMOVE LATER
-//#[derive(Debug, Clone)]
-/*pub enum GrammarItem {
-    Product,
-    Sum,
-    Sub,
-    Div,
-    Number(u64),
-    Paren,
-}*/
+use std::fs::OpenOptions;
 
 //node in the parse tree
 #[derive(Debug, Clone)]
@@ -247,8 +235,7 @@ fn parse_terminal(
         "Unexpected end of input, expected parenthesis or number",
     ))?;
 
-    // DEBUG
-    println!("{}", current_token.lexeme_name.as_str());
+    
     match current_token.lexeme_name.as_str() {
         "KEYWORD" => {
             let mut node = ParseNode::new();
@@ -300,10 +287,17 @@ fn parse_terminal(
 }
 
 //recursive pretty print function
-pub fn print_tree(node: &ParseNode){
+pub fn print_tree( file_name: &String, node: &ParseNode){
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open(file_name.trim())
+        .unwrap();
 
     //overload this for beauty reasons
-    fn print_tree(node: &ParseNode, prefix: String, last_node: bool){
+    fn print_tree(mut file: &std::fs::File, file_name: &String, node: &ParseNode, prefix: String, last_node: bool){
         
         //check last node for end prefix
         let prefix_current = if last_node {"- "} else { "| - "};
@@ -313,14 +307,25 @@ pub fn print_tree(node: &ParseNode){
 
         //iterate over rules and print out the right rules to a new string
         for rule in node.rule.iter().rev(){
-           node_rule_string.push('\n');
+           //node_rule_string.push('\n');
            node_rule_string = node_rule_string + rule;
         }
 
         //print the good stuff
-        println!("\n{}{}{}", prefix, prefix_current, node.entry);
-        println!("{}{}Token: {:?}",prefix, prefix_current, node.token);
-        println!("{}{}Rule: {}",prefix, prefix_current, node_rule_string);
+        let mut line = format!("{}{}{}", prefix, prefix_current, node.entry);
+        if let Err(e) = writeln!(file, "{:?}", line){
+            eprintln!("Could not write to file: {}", e);
+        }
+        
+        line = format!("{}{}Token: {:?}",prefix, prefix_current, node.token);
+        if let Err(e) = writeln!(file, "{:?}", line){
+            eprintln!("Could not write to file: {}", e);
+        }
+
+        line = format!("{}{}Rule: {}",prefix, prefix_current, node_rule_string);
+        if let Err(e) = writeln!(file, "{:?}", line){
+            eprintln!("Could not write to file: {}", e);
+        }
 
         //prefix logic
         let prefix_child = if last_node {"  " } else {"| "};
@@ -334,13 +339,13 @@ pub fn print_tree(node: &ParseNode){
 
             //DO ITTTTTT
             for (i, child) in node.children.iter().enumerate(){
-                print_tree(&child, prefix.to_string(), i == last_child)
+                print_tree(file, file_name, &child, prefix.to_string(), i == last_child)
             }
 
         }
     }
     //run the recursion
-    print_tree(node, "".to_string(), true);
+    print_tree(&file, file_name, node, "".to_string(), true);
 }
 
 

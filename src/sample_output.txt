@@ -1,0 +1,6 @@
+"- num2"
+"- Token: TokenType { token: \"num2\", lexeme: _Identifier, lexeme_name: \"IDENTIFIER\" }"
+"- Rule: <Statement> -> <Declarative><Type> -> bool | float | int"
+"  - int"
+"  - Token: TokenType { token: \"int\", lexeme: _Keyword, lexeme_name: \"KEYWORD\" }"
+"  - Rule: <Type> -> bool | float | int"
