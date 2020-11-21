@@ -337,7 +337,7 @@ pub fn print_tree(file_name: &String, node: &ParseNode) {
         last_node: bool,
     ) {
         //check last node for end prefix
-        let prefix_current = if last_node { "- " } else { "| - " };
+        let prefix_current = { "- " } ;
 
         //get string from the node rule string vector
         let mut node_rule_string = "".to_string();
@@ -365,7 +365,7 @@ pub fn print_tree(file_name: &String, node: &ParseNode) {
         }
 
         //prefix logic
-        let prefix_child = if last_node { "  " } else { "| " };
+        let prefix_child ={""} ;
         let prefix = prefix + prefix_child;
 
         //if we aren't empty call more
