@@ -16,7 +16,7 @@ impl ParseNode {
     pub fn new() -> ParseNode {
         ParseNode {
             children: Vec::new(),
-            entry: "$".to_string(),
+            entry: "(".to_string(),
             //default to declarative
             rule: Vec::new(),
             token: tokens::TokenType {
@@ -38,15 +38,15 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
 
     //create stack of rule strings
     let mut rule_vector: Vec<String> = Vec::new();
-    let mut root_node = ParseNode::new();
-    root_node.rule.push("Sart".to_string());
+    //let mut root_node = ParseNode::new();
+    //root_node.rule.push("Sart".to_string());
 
     parse_declarative(&token_list, 0, &mut rule_vector).and_then(|(mut result_list, iterations)| {
         //check to see we parsed the whole list successfully
         if iterations == token_list.len() {
             Ok(result_list)
         } else if iterations < token_list.len() {
-            root_node.children.push(result_list);
+            //root_node.children.push(result_list);
             let mut new_position = iterations;
 
             while new_position < token_list.len() {
@@ -55,10 +55,10 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
 
                 new_position = new_new_position;
 
-                root_node.children.push(additional_result);
+                result_list.children.push(additional_result);
                 //rule_vector.clear();
             }
-            Ok(root_node)
+            Ok(result_list)
         }
         //error if we did not parse successfully
         else {
