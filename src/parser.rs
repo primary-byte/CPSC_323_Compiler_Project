@@ -37,10 +37,10 @@ pub fn parse(token_list: &Vec<TokenType>) -> Result<ParseNode, String> {
     //start at root node and call recursive function to parse expressions
 
     //create stack of rule strings
-    let mut ruleVector: Vec<String> = Vec::new();
+    let mut rule_vector: Vec<String> = Vec::new();
 
 
-    parse_declarative(&token_list, 0, &mut ruleVector).and_then(|(result_list, iterations)| {
+    parse_declarative(&token_list, 0, &mut rule_vector).and_then(|(result_list, iterations)| {
         //check to see we parsed the whole list successfully
         if iterations == token_list.len() {
             Ok(result_list)
@@ -289,7 +289,7 @@ fn parse_terminal(
 //recursive pretty print function
 pub fn print_tree( file_name: &String, node: &ParseNode){
 
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .create(true)
         .write(true)
         .append(true)
