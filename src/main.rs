@@ -17,7 +17,7 @@ fn main() {
 
     let parse_tree = parser::parse(&token);
     match parse_tree{
-        Ok(pt) =>  parser::print_tree( &file_handling::get_file_name(&mut count), &pt),
+        Ok(pt) => print!("HI"),  //parser::print_tree( &file_handling::get_file_name(&mut count), &pt),
         Err(e) => println!("Got an error: {:?}", e)
     }
 
