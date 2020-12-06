@@ -164,7 +164,13 @@ pub fn parse(token_list: Vec!<TokenType>){
     let mut LL_TABLE = hash_map::new();
 
     //create EXPR row
-    LL_TABLE.insert((Symbols::EXPR, Symbols::L_PAREN), 9);
+    LL_TABLE.insert((Symbols::EXPR, Symbols::L_PAREN), 1);
+    LL_TABLE.insert((Symbols::EXPR, Symbols::ID), 1);
+    LL_TABLE.insert((Symbols::EXPR, Symbols::NUM), 1);
+    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::PLUS), 2);
+    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::MINUS), 3);
+    LL_TABLE.insert((Symbols::TERM, Symbols::L_PAREN), 5);
+    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::PLUS), 2);       
 
     //create symbol stack
     let mut ss = Vec!<Symbols>;
@@ -206,6 +212,7 @@ pub fn parse(token_list: Vec!<TokenType>){
                     //remvove front
                     ss.pop();
                     ss.push(Symbols::TERM);
+                    ss.push(Symbols::EXPR_PRIME);
                 }
 
                 //+TE'
