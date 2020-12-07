@@ -1,30 +1,29 @@
 use crate::file_handling::lexer::*;
+use std::collections::HashMap; //hashmapping
 use std::fs::OpenOptions;
 use std::io::Write; //string operations
-use std::collections::hash_map; //hashmapping
-
+use Symbols::*;
 //derive operations to perform deep copies of the enum later
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-enum Symbols{
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Symbols {
     //Terminals
-    PLUS = 0,           // +
-    MINUS = 1,          // - 
-    MULT = 2,           // *
-    DIV = 3,            // /
-    L_PAREN = 4,        // (
-    R_PAREN = 5,        // )
-    NUM = 6,            // NUM
-    ID = 7,             // ID
-    END_OF_STACK = 8,   // $
+    PLUS,         // +
+    MINUS,        // -
+    MULT,         // *
+    DIV,          // /
+    L_PAREN,      // (
+    R_PAREN,      // )
+    NUM,          // NUM
+    ID,           // ID
+    END_OF_STACK, // $
 
     //Non-Terminals                                 RULE#
-    EXPR = 9,           // TE'                          1
-    EXPR_PRIME = 10,    // +TE' | -TE' | EPSILON        2,3,4
-    TERM = 11,          // F | T'                       5,6
-    TERM_PRIME = 12,    // *FT' | /FT'                  7,8
-    FACTOR = 13,        // (E) | ID | <NUM>             9,10,11
-    ID_NT = 14          // id                           12
-
+    EXPR,       // TE'                          1
+    EXPR_PRIME, // +TE' | -TE' | EPSILON        2,3,4
+    TERM,       // F | T'                       5,6
+    TERM_PRIME, // *FT' | /FT'                  7,8
+    FACTOR,     // (E) | ID | <NUM>             9,10,11
+    ID_NT,      // id                           12
 }
 
 /*
@@ -96,189 +95,173 @@ End_of_stack    −	−	−	−	−	−	−	+	−
 
 // ];
 
-pub fn lexer_to_symbol(current_token: TokenType) => Symbols{
-
-
+pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
     //match token to symbol enum
-    match current_token.leme_name.as_str(){
-        "IDENTIFIER" => {
-            //return ID enum symbol
-            ID
-        }
+    match current_token.lexeme_name.as_str() {
+        "IDENTIFIER" => match current_token.token.as_str() {
+            "$" => END_OF_STACK,
+            _ => ID,
+        },
 
         "SEPARATOR" => {
             //match against parenthesis
-            match current_token.token.as_str(){
-                "(" =>{
-                    L_PAREN
-                }
-                ")" =>{
-                    R_PAREN  
-                }
+            match current_token.token.as_str() {
+                "(" => L_PAREN,
+                ")" => R_PAREN,
 
-                _ => {Err(format!(
-                    "Expected a prenthesis but did not get one."
-                ))
+                _ =>
+                //{Err(format!(
+                // "Expected a prenthesis but did not get one."
+                //))
+                {
+                    ID
+                }
             }
         }
 
         "OPERATOR" => {
-            match current_token.token.as_str(){
-                "+" =>{
-                    PLUS
-                }
-                "-" =>{
-                    MINUS
-                }
-                "*" =>{
-                    MULT
-                }
-                "/" =>{
-                    DIV
-                }
+            match current_token.token.as_str() {
+                "+" => PLUS,
+                "-" => MINUS,
+                "*" => MULT,
+                "/" => DIV,
 
-                _ => {Err(format!(
-                    "Expected an operator but did not get one."
-                    ))
+                _ =>
+                //{Err(format!(
+                //  "Expected an operator but did not get one."
+                // ))
+                {
+                    ID
                 }
             }
         }
 
-        "INTEGER" => {
-            NUM
-        }
+        "INTEGER" => NUM,
 
-        _=>{
-            Err(format!(
-                "Unexpected value into lexer. Token value: {}", current_token.value.as_str()
-                ))
+        _ => {
+            /* Err(format!(
+            "Unexpected value into lexer. Token value: {}", current_token.value.as_str()
+            )) */
+            ID
         }
-
     }
-
 }
 
-pub fn parse(token_list: Vec!<TokenType>){
-
+pub fn parse(token_list: Vec<TokenType>) {
     //create hash map
-    let mut LL_TABLE = hash_map::new();
+    let mut LL_TABLE = HashMap::new();
 
     //create EXPR row
-    LL_TABLE.insert((Symbols::EXPR, Symbols::L_PAREN), 1);
-    LL_TABLE.insert((Symbols::EXPR, Symbols::ID), 1);
-    LL_TABLE.insert((Symbols::EXPR, Symbols::NUM), 1);
-    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::PLUS), 2);
-    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::MINUS), 3);
-    LL_TABLE.insert((Symbols::TERM, Symbols::L_PAREN), 5);
-    LL_TABLE.insert((Symbols::EXPR_PRIME, Symbols::PLUS), 2);       
+    LL_TABLE.insert((EXPR, L_PAREN), 1);
+    LL_TABLE.insert((EXPR, ID), 1);
+    LL_TABLE.insert((EXPR, NUM), 1);
+    LL_TABLE.insert((EXPR_PRIME, PLUS), 2);
+    LL_TABLE.insert((EXPR_PRIME, MINUS), 3);
+    LL_TABLE.insert((EXPR_PRIME, R_PAREN), 4);
+    LL_TABLE.insert((EXPR_PRIME, END_OF_STACK), 4);
+    LL_TABLE.insert((TERM, L_PAREN), 5);
+    LL_TABLE.insert((TERM, NUM), 5);
+    LL_TABLE.insert((TERM, ID), 5);
+    LL_TABLE.insert((TERM_PRIME, PLUS), 2);
+    LL_TABLE.insert((FACTOR, L_PAREN), 9);
+    LL_TABLE.insert((FACTOR, ID), 10);
+    LL_TABLE.insert((ID_NT, ID), 12);
 
     //create symbol stack
-    let mut ss = Vec!<Symbols>;
+    let mut ss: Vec<Symbols> = Vec::new();
 
     let mut token_pointer: usize = 0;
 
     //push end of stack $
-    ss.push(Symbols::END_OF_STACK);
+    ss.push(END_OF_STACK);
     //push expression
-    ss.push(Symbols::EXPR);
+    ss.push(EXPR);
 
-    while(ss.size() > 0){
+    while ss.len() > 1 {
+        //debug vector size
+        ss.shrink_to_fit();
+        println!("Vector in now len: {:?}", ss.len());
         //compare the lexer at pointer to stack
-        if(ss.front() == lexer_to_symbol(token_list[token_pointer]){
-            
-            println!("Match symbols: {}", lexer_to_symbol(token_list[token_pointer]));
-            
+        if ss[ss.len() - 1] == lexer_to_symbol(&token_list[token_pointer]) {
+            println!("Match symbols: {:?}", token_list[token_pointer].token);
             //increment token pointer
             token_pointer = token_pointer + 1;
 
             //pop off front of vector stack
             ss.pop();
-        }
-        else
-        {
-
+        } else {
             let mut nlength = ss.len() - 1;
             //holds current rule cell (usize)
-            let mut current_table_cell = LL_TABLE[ss[nlength]][lexer_to_symbol(token_list[token_pointer])];
+            let mut current_table_cell =
+                LL_TABLE.get(&(ss[nlength], lexer_to_symbol(&token_list[token_pointer])));
 
             //output the rule
-            println!("Rule: {}", current_table_cell
-            );
+            println!("Rule: {:?}", current_table_cell);
 
             //match correct rule
-            match current_table_cell{
+            match current_table_cell {
                 //TE'
-                1 => {
+                Some(1) => {
                     //remvove front
                     ss.pop();
-                    ss.push(Symbols::TERM);
                     ss.push(Symbols::EXPR_PRIME);
+                    ss.push(Symbols::TERM);
                 }
 
                 //+TE'
-                2 => {
+                Some(2) => {
                     //remove front
                     ss.pop();
                     //see above
-                    ss.push(Symbols::PLUS);
+                    ss.push(Symbols::EXPR_PRIME);
                     ss.push(Symbols::TERM);
-                    SS.push(Symbols::EXPR_PRIME);
-                    
-                    
+                    ss.push(Symbols::PLUS);
                 }
 
                 //-TE'
-                3 => {
+                Some(3) => {
                     ss.pop();
-                    ss.push(Symbols::MINUS);
+
+                    ss.push(Symbols::EXPR_PRIME);
                     ss.push(Symbols::TERM);
-                    SS.push(Symbols::EXPR_PRIME);
-                    
-                    
+                    ss.push(Symbols::MINUS);
                 }
 
                 //EPSILON
-                4 => {
-                    
-                    
-                    
+                Some(4) => {
+                    ss.pop();
                 }
 
                 //F
-                5 => {
+                Some(5) => {
                     ss.pop();
                     ss.push(Symbols::FACTOR);
-                    
                 }
 
                 //T'
-                6 => {
+                Some(6) => {
                     ss.pop();
                     ss.push(Symbols::TERM_PRIME);
-
                 }
-                
                 //*FT'
-                7 => {
-
+                Some(7) => {
                     ss.pop();
                     ss.push(Symbols::MULT);
                     ss.push(Symbols::FACTOR);
                     ss.push(Symbols::TERM_PRIME);
                 }
 
-                ///FT'
-                8 => {
-
+                //FT'
+                Some(8) => {
                     ss.pop();
                     ss.push(Symbols::FACTOR);
                     ss.push(Symbols::TERM_PRIME);
                 }
 
                 //(E)
-                9 => {
+                Some(9) => {
                     //remove front
-                    ss.remove(0);
+                    ss.pop();
                     //add r_paren, expr, l_paren
                     ss.push(Symbols::R_PAREN);
                     ss.push(Symbols::EXPR);
@@ -286,34 +269,28 @@ pub fn parse(token_list: Vec!<TokenType>){
                 }
 
                 //ID_NT
-                10 => {
+                Some(10) => {
                     ss.pop();
                     ss.push(Symbols::ID_NT);
                 }
 
                 // <NUM>
-                11 => {
+                Some(11) => {
                     ss.pop();
                     ss.push(Symbols::NUM);
                 }
 
                 //id
-                12 => {
+                Some(12) => {
                     ss.pop();
                     ss.push(Symbols::ID);
                 }
 
                 //default
-                _=>{
-                    //error out
-                    Error("Defaulted out and died. RIP");
+                _ => {
+                    println!("ERROR!");
                 }
             }
-
-
-
         }
-        
     }
-
 }

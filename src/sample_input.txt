@@ -1,3 +1,1 @@
-int num2
-int num5
-num2 = 5
+(a+a)

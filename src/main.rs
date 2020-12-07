@@ -15,11 +15,7 @@ fn main() {
     //write vector of tokens to specified file
     //file_handling::write_to_file(file_handling::get_file_name(&mut count), token);
 
-    let parse_tree = parser::parse(&token);
-    match parse_tree{
-        Ok(pt) => print!("HI"),  //parser::print_tree( &file_handling::get_file_name(&mut count), &pt),
-        Err(e) => println!("Got an error: {:?}", e)
-    }
+    parser::parse(token);
 
    
 }
