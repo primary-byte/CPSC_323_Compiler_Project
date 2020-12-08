@@ -1,12 +1,12 @@
 #[path = "../lexer/lexer.rs"]
 pub mod lexer;
+use std::env;
 use std::fs::File;
 use std::fs::OpenOptions;
+use std::io;
 use std::io::prelude::*;
 use std::io::BufReader; //for command line arguments, eg filename.txt
 use std::io::Write as IoWrite;
-use std::env;
-use std::io;
 
 pub fn get_file_name(count: &mut i32) -> String {
     //check for command line arguments
@@ -16,7 +16,7 @@ pub fn get_file_name(count: &mut i32) -> String {
 
     if args.len() > 1 && *count == 0 {
         *count = 1;
-         return args[1].to_string(); 
+        return args[1].to_string();
     } else if args.len() > 2 && *count == 1 {
         return args[2].to_string();
     }
@@ -48,12 +48,12 @@ pub fn convert_file_to_string(file_name: String) -> String {
     file.read_to_string(&mut contents)
         .expect("Error reading file!");
 
+    contents.push_str(" $");
     contents
 }
 
 //write a given vector of tokens to a given file
-pub fn write_to_file(file_name: String, token: Vec< lexer::TokenType > ){
-
+pub fn write_to_file(file_name: String, token: Vec<lexer::TokenType>) {
     //let mut line: String;
     let mut file = OpenOptions::new()
         .create(true)
@@ -64,9 +64,9 @@ pub fn write_to_file(file_name: String, token: Vec< lexer::TokenType > ){
 
     //iterate over tokens
     for tok in token.iter() {
-       let line = format!( "{}         {}", &tok.lexeme_name, &tok.token);
-       if let Err(e) = writeln!(file, "{:?}", line ) {
-           eprintln!("Could not write to file: {}", e);
-       }
+        let line = format!("{}         {}", &tok.lexeme_name, &tok.token);
+        if let Err(e) = writeln!(file, "{:?}", line) {
+            eprintln!("Could not write to file: {}", e);
+        }
     }
 }
