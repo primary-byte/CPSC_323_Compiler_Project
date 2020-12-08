@@ -215,7 +215,15 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((STATEMENT, IF), 23);
     LL_TABLE.insert((STATEMENT, ELSE), 4);
     LL_TABLE.insert((STATEMENT, ENDIF), 4);
+    LL_TABLE.insert((STATEMENT, WHILE), 34);
+    LL_TABLE.insert((STATEMENT, WHILEEND), 4);
+    LL_TABLE.insert((STATEMENT, BEGIN), 35);
+    LL_TABLE.insert((STATEMENT, END), 4);
+    LL_TABLE.insert((STATEMENT, SEMICOLON), 4);
     LL_TABLE.insert((STATEMENT, END_OF_STACK), 4);
+    LL_TABLE.insert((MORESTATEMENTS, SEMICOLON), 26);
+    LL_TABLE.insert((MORESTATEMENTS, WHILEEND), 4);
+    LL_TABLE.insert((MORESTATEMENTS, END), 4);
     LL_TABLE.insert((ASSIGN, ID), 14);
     LL_TABLE.insert((DECLAR, INT), 16);
     LL_TABLE.insert((DECLAR, BOOL), 16);
@@ -242,12 +250,15 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((EXPR_PRIME, MULT), 6);
     LL_TABLE.insert((EXPR_PRIME, DIV), 6);
     LL_TABLE.insert((EXPR_PRIME, THEN), 4);
+    LL_TABLE.insert((EXPR_PRIME, ELSE), 4);
+    LL_TABLE.insert((EXPR_PRIME, ENDIF), 4);
     LL_TABLE.insert((EXPR_PRIME, LTHAN), 4);
     LL_TABLE.insert((EXPR_PRIME, LEQUAL), 4);
     LL_TABLE.insert((EXPR_PRIME, EQUALTO), 4);
     LL_TABLE.insert((EXPR_PRIME, NOTEQUAL), 4);
     LL_TABLE.insert((EXPR_PRIME, GTHANEQUAL), 4);
     LL_TABLE.insert((EXPR_PRIME, GTHAN), 4);
+    LL_TABLE.insert((EXPR_PRIME, DO), 4);
     LL_TABLE.insert((EXPR_PRIME, SEMICOLON), 20);
     LL_TABLE.insert((TERM, L_PAREN), 5);
     LL_TABLE.insert((TERM, NUM), 5);
@@ -452,7 +463,6 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //Handles IF statements
                 Some(23) => {
-                    ss.pop();
                     ss.push(ENDIF);
                     ss.push(STATEMENT);
                     ss.push(ELSE);
@@ -573,6 +583,19 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 Some(34) => {
                     ss.pop();
+                    ss.push(WHILEEND);
+                    ss.push(STATEMENT);
+                    ss.push(DO);
+                    ss.push(CONDITIONAL);
+                    ss.push(WHILE);
+                }
+
+                Some(35) => {
+                    ss.pop();
+                    ss.push(END);
+                    ss.push(MORESTATEMENTS);
+                    ss.push(STATEMENT);
+                    ss.push(BEGIN);
                 }
 
                 //default

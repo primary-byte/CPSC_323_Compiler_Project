@@ -5,14 +5,13 @@ pub use tokens::*;
 //parse a given string into a vector of tokens via use of FSM
 // to modify change "fsm.rs"
 pub fn lexer(expression: &String) -> Vec<TokenType> {
-    let mut access = TokenType::default();          
-    let mut tokens: Vec<TokenType> = Vec::new();    //stores tokens previously collected
-    let mut col: FsmTransitions;                    //current column of Table
-    let mut prev_state: FsmTransitions = _Reject;   //Previous state we were in
-    let mut current_state: FsmTransitions = _Reject;//Current state we are in
-    let mut current_token = String::new();          //current token we are working on
+    let mut access = TokenType::default();
+    let mut tokens: Vec<TokenType> = Vec::new(); //stores tokens previously collected
+    let mut col: FsmTransitions; //current column of Table
+    let mut prev_state: FsmTransitions = _Reject; //Previous state we were in
+    let mut current_state: FsmTransitions = _Reject; //Current state we are in
+    let mut current_token = String::new(); //current token we are working on
     let mut index = 0;
-    
     //loop through characters
     while index != expression.len() {
         col = get_col(match expression.chars().nth(index) {
@@ -46,7 +45,7 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
                 //add the valid token
                 access.token = current_token;
                 access.lexeme = prev_state;
-                access.lexeme_name = get_lexeme_name( &access.lexeme );
+                access.lexeme_name = get_lexeme_name(&access.lexeme);
                 tokens.push(access.clone());
             }
 
@@ -63,9 +62,8 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
         prev_state = current_state;
     }
     if current_state == _String {
-                    current_state = get_string_type(current_token.clone());
-                }
-                
+        current_state = get_string_type(current_token.clone());
+    }
     if current_state != _Space && current_token != "" {
         access.token = current_token.clone();
         access.lexeme = current_state;
@@ -135,7 +133,8 @@ fn get_lexeme_name(lexeme: &FsmTransitions) -> String {
 fn get_string_type(token: String) -> FsmTransitions {
     let keyword_vec = vec![
         "int", "float", "bool", "true", "false", "if", "else", "then", "endif", "while",
-        "whileend", "do", "doend", "for", "forend", "input", "output", "and", "or", "not",
+        "whileend", "do", "doend", "for", "forend", "input", "output", "and", "or", "not", "begin",
+        "end",
     ];
 
     if keyword_vec.contains(&token.as_str()) {

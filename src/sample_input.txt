@@ -1,1 +1,7 @@
-if a == b then b = a + b;  else a = c; endif
+begin
+
+while a < b do a = a + 1; whileend;
+
+if 1 < 2 then c = (a+b) else c = a endif;
+
+end
