@@ -1,4 +1,1 @@
-bool a; 
-float a;
-a + b - c;
-a = d;
+if a == b then b = a + b;  else a = c; endif

@@ -7,19 +7,35 @@ use Symbols::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Symbols {
     //Terminals
-    PLUS,         // +
-    MINUS,        // -
-    MULT,         // *
-    DIV,          // /
-    L_PAREN,      // (
-    R_PAREN,      // )
-    NUM,          // NUM
-    ID,           // ID
+    PLUS,    // +
+    MINUS,   // -
+    MULT,    // *
+    DIV,     // /
+    L_PAREN, // (
+    R_PAREN, // )
+    NUM,     // num
+    ID,      // id
     EQUAL,
     INT,
     BOOL,
     FLOAT,
+    COMMA,
     SEMICOLON,
+    IF,
+    THEN,
+    ELSE,
+    ENDIF,
+    WHILE,
+    DO,
+    WHILEEND,
+    BEGIN,
+    END,
+    LTHAN,
+    LEQUAL,
+    EQUALTO,
+    NOTEQUAL,
+    GTHANEQUAL,
+    GTHAN,
     END_OF_STACK, // $
 
     //Non-Terminals                                 RULE#
@@ -28,11 +44,15 @@ pub enum Symbols {
     TERM,       // F | T'                       5,6
     TERM_PRIME, // *FT' | /FT' | E              7,8, 13
     FACTOR,     // (E) | ID | <NUM>             9,10,11
-    ID_NT,      // id                           12
+    ID_NT,      // ID                         12
     STATEMENT,  // S
     ASSIGN,
     DECLAR,
     TYPE,
+    MOREIDS,
+    MORESTATEMENTS,
+    CONDITIONAL,
+    RELOP,
 }
 
 /*
@@ -118,6 +138,7 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
                 "(" => L_PAREN,
                 ")" => R_PAREN,
                 ";" => SEMICOLON,
+                "," => COMMA,
 
                 _ =>
                 //{Err(format!(
@@ -136,6 +157,12 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
                 "*" => MULT,
                 "/" => DIV,
                 "=" => EQUAL,
+                "<" => LTHAN,
+                "<=" => LEQUAL,
+                "==" => EQUALTO,
+                "<>" => NOTEQUAL,
+                ">=" => GTHANEQUAL,
+                ">" => GTHAN,
 
                 _ =>
                 //{Err(format!(
@@ -149,14 +176,21 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
 
         "INTEGER" => NUM,
 
-        "KEYWORD" => {
-            match current_token.token.as_str() {
-                "int" => INT,
-                "bool" => BOOL,
-                "float" => FLOAT,
-                _ => INT
-            }
-        }
+        "KEYWORD" => match current_token.token.as_str() {
+            "int" => INT,
+            "bool" => BOOL,
+            "float" => FLOAT,
+            "if" => IF,
+            "then" => THEN,
+            "else" => ELSE,
+            "endif" => ENDIF,
+            "while" => WHILE,
+            "do" => DO,
+            "whileend" => WHILEEND,
+            "begin" => BEGIN,
+            "end" => END,
+            _ => INT,
+        },
 
         _ => {
             /* Err(format!(
@@ -173,10 +207,14 @@ pub fn parse(token_list: Vec<TokenType>) {
 
     //create EXPR row
     LL_TABLE.insert((STATEMENT, L_PAREN), 1);
+    LL_TABLE.insert((STATEMENT, NUM), 1);
     LL_TABLE.insert((STATEMENT, ID), 13);
     LL_TABLE.insert((STATEMENT, INT), 15);
     LL_TABLE.insert((STATEMENT, BOOL), 15);
     LL_TABLE.insert((STATEMENT, FLOAT), 15);
+    LL_TABLE.insert((STATEMENT, IF), 23);
+    LL_TABLE.insert((STATEMENT, ELSE), 4);
+    LL_TABLE.insert((STATEMENT, ENDIF), 4);
     LL_TABLE.insert((STATEMENT, END_OF_STACK), 4);
     LL_TABLE.insert((ASSIGN, ID), 14);
     LL_TABLE.insert((DECLAR, INT), 16);
@@ -185,6 +223,14 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((TYPE, INT), 17);
     LL_TABLE.insert((TYPE, BOOL), 18);
     LL_TABLE.insert((TYPE, FLOAT), 19);
+    LL_TABLE.insert((CONDITIONAL, ID), 27);
+    LL_TABLE.insert((CONDITIONAL, NUM), 27);
+    LL_TABLE.insert((RELOP, LTHAN), 28);
+    LL_TABLE.insert((RELOP, LEQUAL), 29);
+    LL_TABLE.insert((RELOP, EQUALTO), 30);
+    LL_TABLE.insert((RELOP, NOTEQUAL), 31);
+    LL_TABLE.insert((RELOP, GTHANEQUAL), 32);
+    LL_TABLE.insert((RELOP, GTHAN), 33);
     LL_TABLE.insert((EXPR, L_PAREN), 1);
     LL_TABLE.insert((EXPR, ID), 1);
     LL_TABLE.insert((EXPR, NUM), 1);
@@ -192,8 +238,16 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((EXPR_PRIME, MINUS), 3);
     LL_TABLE.insert((EXPR_PRIME, R_PAREN), 4);
     LL_TABLE.insert((EXPR_PRIME, END_OF_STACK), 4);
+    LL_TABLE.insert((EXPR_PRIME, SEMICOLON), 20);
     LL_TABLE.insert((EXPR_PRIME, MULT), 6);
     LL_TABLE.insert((EXPR_PRIME, DIV), 6);
+    LL_TABLE.insert((EXPR_PRIME, THEN), 4);
+    LL_TABLE.insert((EXPR_PRIME, LTHAN), 4);
+    LL_TABLE.insert((EXPR_PRIME, LEQUAL), 4);
+    LL_TABLE.insert((EXPR_PRIME, EQUALTO), 4);
+    LL_TABLE.insert((EXPR_PRIME, NOTEQUAL), 4);
+    LL_TABLE.insert((EXPR_PRIME, GTHANEQUAL), 4);
+    LL_TABLE.insert((EXPR_PRIME, GTHAN), 4);
     LL_TABLE.insert((EXPR_PRIME, SEMICOLON), 20);
     LL_TABLE.insert((TERM, L_PAREN), 5);
     LL_TABLE.insert((TERM, NUM), 5);
@@ -208,8 +262,9 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((TERM_PRIME, END_OF_STACK), 4);
     LL_TABLE.insert((FACTOR, L_PAREN), 9);
     LL_TABLE.insert((FACTOR, ID), 10);
+    LL_TABLE.insert((FACTOR, NUM), 11);
     LL_TABLE.insert((ID_NT, ID), 12);
-    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 20);
+    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 21);
     //create symbol stack
     let mut ss: Vec<Symbols> = Vec::new();
 
@@ -221,17 +276,14 @@ pub fn parse(token_list: Vec<TokenType>) {
     ss.push(STATEMENT);
 
     while ss.len() > 0 {
-        //let mut line = String::new();
-        //let b1 = std::io::stdin().read_line(&mut line).unwrap();
+        let mut line = String::new();
+        let b1 = std::io::stdin().read_line(&mut line).unwrap();
         println!("Stack: {:?}", ss);
-        //debug vector size
-        ss.shrink_to_fit();
         //println!("Vector in now len: {:?}", ss.len());
         if ss[ss.len() - 1] == END_OF_STACK && token_list.len() == token_pointer + 1 {
             println!("Code parsed Successfully!! :)");
             ss.pop();
         }
-
         //compare the lexer at pointer to stack
         else if ss[ss.len() - 1] == lexer_to_symbol(&token_list[token_pointer]) {
             println!("Match symbols: {:?}", token_list[token_pointer].token);
@@ -255,8 +307,8 @@ pub fn parse(token_list: Vec<TokenType>) {
                 Some(1) => {
                     //remvove front
                     ss.pop();
-                    ss.push(Symbols::EXPR_PRIME);
-                    ss.push(Symbols::TERM);
+                    ss.push(EXPR_PRIME);
+                    ss.push(TERM);
                 }
 
                 //+TE'
@@ -264,18 +316,18 @@ pub fn parse(token_list: Vec<TokenType>) {
                     //remove front
                     ss.pop();
                     //see above
-                    ss.push(Symbols::EXPR_PRIME);
-                    ss.push(Symbols::TERM);
-                    ss.push(Symbols::PLUS);
+                    ss.push(EXPR_PRIME);
+                    ss.push(TERM);
+                    ss.push(PLUS);
                 }
 
                 //-TE'
                 Some(3) => {
                     ss.pop();
 
-                    ss.push(Symbols::EXPR_PRIME);
-                    ss.push(Symbols::TERM);
-                    ss.push(Symbols::MINUS);
+                    ss.push(EXPR_PRIME);
+                    ss.push(TERM);
+                    ss.push(MINUS);
                 }
 
                 //EPSILON
@@ -386,10 +438,141 @@ pub fn parse(token_list: Vec<TokenType>) {
                     ss.push(FLOAT);
                 }
 
+                //SEMI COLON
                 Some(20) => {
+                    ss.pop();
                     ss.push(STATEMENT);
-                    println!("Matched symbols: \";\"");
-                    token_pointer = token_pointer + 1;
+                    ss.push(SEMICOLON);
+                }
+
+                Some(21) => {
+                    ss.push(STATEMENT);
+                    ss.push(SEMICOLON);
+                }
+
+                //Handles IF statements
+                Some(23) => {
+                    ss.pop();
+                    ss.push(ENDIF);
+                    ss.push(STATEMENT);
+                    ss.push(ELSE);
+                    ss.push(STATEMENT);
+                    ss.push(THEN);
+                    ss.push(CONDITIONAL);
+                    ss.push(IF);
+                }
+
+                //Handles WHILE statements
+                Some(24) => {
+                    ss.pop();
+                    ss.push(WHILEEND);
+                    ss.push(STATEMENT);
+                    ss.push(DO);
+                    ss.push(CONDITIONAL);
+                    ss.push(WHILE);
+                }
+
+                //Handles begin statements
+                Some(25) => {
+                    ss.pop();
+                    ss.push(END);
+                    ss.push(MORESTATEMENTS);
+                    ss.push(STATEMENT);
+                    ss.push(BEGIN);
+                }
+
+                //Handles morestatements
+                Some(26) => {
+                    ss.pop();
+                    ss.push(MORESTATEMENTS);
+                    ss.push(STATEMENT);
+                    ss.push(SEMICOLON);
+                }
+
+                //Handle conditionals
+                Some(27) => {
+                    let mut temp_pointer = token_pointer;
+                    let mut relop_check = false;
+                    //Check for a Relop
+                    while temp_pointer < token_list.len() {
+                        match lexer_to_symbol(&token_list[temp_pointer]) {
+                            LTHAN => {
+                                relop_check = true;
+                                break;
+                            }
+
+                            LEQUAL => {
+                                relop_check = true;
+                                break;
+                            }
+
+                            EQUALTO => {
+                                relop_check = true;
+                                break;
+                            }
+
+                            NOTEQUAL => {
+                                relop_check = true;
+                                break;
+                            }
+
+                            GTHANEQUAL => {
+                                relop_check = true;
+                                break;
+                            }
+
+                            GTHAN => {
+                                relop_check = true;
+                                break;
+                            }
+                            THEN => break,
+
+                            _ => temp_pointer = temp_pointer + 1,
+                        }
+                    }
+
+                    if relop_check {
+                        ss.pop();
+                        ss.push(EXPR);
+                        ss.push(RELOP);
+                        ss.push(EXPR);
+                    } else {
+                        ss.pop();
+                        ss.push(EXPR);
+                    }
+                }
+
+                Some(28) => {
+                    ss.pop();
+                    ss.push(LTHAN);
+                }
+
+                Some(29) => {
+                    ss.pop();
+                    ss.push(LEQUAL);
+                }
+
+                Some(30) => {
+                    ss.pop();
+                    ss.push(EQUALTO);
+                }
+
+                Some(31) => {
+                    ss.pop();
+                    ss.push(NOTEQUAL);
+                }
+                Some(32) => {
+                    ss.pop();
+                    ss.push(GTHANEQUAL);
+                }
+
+                Some(33) => {
+                    ss.pop();
+                    ss.push(GTHAN);
+                }
+
+                Some(34) => {
+                    ss.pop();
                 }
 
                 //default

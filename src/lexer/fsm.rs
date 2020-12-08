@@ -28,7 +28,7 @@ pub const STATE_TABLE: &[&[FsmTransitions]] = &[
         _Real, _Real, _Unknown, _Reject, _Reject, _Reject, _Reject, _Reject, _Reject,
     ], //State 2
     &[
-        _Operator, _Reject, _Reject, _Reject, _Reject, _Reject, _Reject, _Reject, _Reject,
+        _Operator, _Reject, _Reject, _Operator, _Reject, _Reject, _Reject, _Reject, _Reject,
     ], //State 3
     &[
         _String, _String, _Reject, _Reject, _String, _Reject, _Reject, _Reject, _Reject,
