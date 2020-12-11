@@ -600,7 +600,12 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //default
                 _ => {
-                    println!("ERROR!");
+                    println!(
+                        "ERROR! Expected {:?} but got {:?}",
+                        ss[ss.len() - 1],
+                        lexer_to_symbol(&token_list[token_pointer])
+                    );
+                    break;
                 }
             }
         }
