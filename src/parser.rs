@@ -1,3 +1,4 @@
+use prettytable::{Table, Row, Cell};
 use crate::file_handling::lexer::*;
 use std::collections::HashMap; //hashmapping
 use std::fs::OpenOptions;
@@ -644,9 +645,17 @@ fn return_enum_string(temp: Symbols) -> String {
 }
 
 fn print_symbol_table(ST: Vec<(String, String, usize)>) {
-    println!("TYPE       Variable      Line#");
+    
+    let mut table = Table::new();
 
+    //add header
+    table.add_row(row!["TYPE","Variable","Line#"]);
+
+    //add data
     for i in ST {
-        println!("{}           {}           {}", i.0, i.1, i.2);
+        table.add_row(row![i.0,i.1,i.2]);
     }
+
+    //print table to stdout
+    table.printstd();
 }

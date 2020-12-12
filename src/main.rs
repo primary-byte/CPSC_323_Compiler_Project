@@ -1,3 +1,4 @@
+#[macro_use] extern crate prettytable;
 #[path = "file_handling/file_handling.rs"]
 mod file_handling;
 mod parser;
