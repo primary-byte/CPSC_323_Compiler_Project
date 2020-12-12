@@ -10,12 +10,11 @@ fn main() {
         file_handling::convert_file_to_string(file_handling::get_file_name(&mut count));
 
     //get vector of tokens from the lexer module
-    let token: Vec<file_handling::lexer::TokenType> = file_handling::lexer::lexer(&expression);
+    let token: Vec<file_handling::lexer::TokenType> =
+        file_handling::lexer::lexer(&expression);
 
     //write vector of tokens to specified file
     //file_handling::write_to_file(file_handling::get_file_name(&mut count), token);
 
     parser::parse(token);
-
-   
 }

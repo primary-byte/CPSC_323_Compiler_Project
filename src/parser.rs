@@ -36,6 +36,7 @@ pub enum Symbols {
     NOTEQUAL,
     GTHANEQUAL,
     GTHAN,
+    ERROR,
     END_OF_STACK, // $
 
     //Non-Terminals                                 RULE#
@@ -145,7 +146,7 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
                 // "Expected a prenthesis but did not get one."
                 //))
                 {
-                    ID
+                    ERROR
                 }
             }
         }
@@ -169,7 +170,7 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
                 //  "Expected an operator but did not get one."
                 // ))
                 {
-                    ID
+                    ERROR
                 }
             }
         }
@@ -189,14 +190,14 @@ pub fn lexer_to_symbol(current_token: &TokenType) -> Symbols {
             "whileend" => WHILEEND,
             "begin" => BEGIN,
             "end" => END,
-            _ => INT,
+            _ => ERROR,
         },
 
         _ => {
             /* Err(format!(
             "Unexpected value into lexer. Token value: {}", current_token.value.as_str()
             )) */
-            ID
+            ERROR
         }
     }
 }
@@ -286,10 +287,16 @@ pub fn parse(token_list: Vec<TokenType>) {
     //push expression
     ss.push(STATEMENT);
 
+    let mut ST: Vec<(String, String, usize)> = Vec::new();
+    let mut symbol_type: String = " ".to_string();
+    let mut symbol_name: String = " ".to_string();
+    let mut symbol_flag: bool = false;
+
     while ss.len() > 0 {
-        let mut line = String::new();
-        let b1 = std::io::stdin().read_line(&mut line).unwrap();
-        println!("Stack: {:?}", ss);
+        // let mut line = String::new();
+        //let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
+        //println!("Stack: {:?}", ss);
         //println!("Vector in now len: {:?}", ss.len());
         if ss[ss.len() - 1] == END_OF_STACK && token_list.len() == token_pointer + 1 {
             println!("Code parsed Successfully!! :)");
@@ -304,10 +311,10 @@ pub fn parse(token_list: Vec<TokenType>) {
             //pop off front of vector stack
             ss.pop();
         } else {
+            let mut current_symbol = lexer_to_symbol(&token_list[token_pointer]);
             let mut nlength = ss.len() - 1;
             //holds current rule cell (usize)
-            let mut current_table_cell =
-                LL_TABLE.get(&(ss[nlength], lexer_to_symbol(&token_list[token_pointer])));
+            let mut current_table_cell = LL_TABLE.get(&(ss[nlength], current_symbol));
 
             //output the rule
             println!("Rule: {:?}", current_table_cell);
@@ -399,6 +406,16 @@ pub fn parse(token_list: Vec<TokenType>) {
                 Some(12) => {
                     ss.pop();
                     ss.push(Symbols::ID);
+                    symbol_name = token_list[token_pointer].token.to_string();
+                    //symbol_flag = true;
+                    if symbol_flag {
+                        ST.push((
+                            symbol_type.clone(),
+                            symbol_name.clone(),
+                            token_list[token_pointer].line,
+                        ));
+                        symbol_flag = false;
+                    }
                 }
 
                 Some(13) => {
@@ -425,7 +442,9 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 Some(15) => {
                     ss.pop();
+                    symbol_type = return_enum_string(current_symbol);
                     ss.push(DECLAR);
+                    symbol_flag = true;
                 }
 
                 Some(16) => {
@@ -601,13 +620,33 @@ pub fn parse(token_list: Vec<TokenType>) {
                 //default
                 _ => {
                     println!(
-                        "ERROR! Expected {:?} but got {:?}",
+                        "ERROR! Expected {:?} but got {:?} on line {:?}",
                         ss[ss.len() - 1],
-                        lexer_to_symbol(&token_list[token_pointer])
+                        lexer_to_symbol(&token_list[token_pointer]),
+                        token_list[token_pointer].line
                     );
                     break;
                 }
             }
         }
+    }
+
+    print_symbol_table(ST);
+}
+
+fn return_enum_string(temp: Symbols) -> String {
+    match temp {
+        INT => "Integer".to_string(),
+        BOOl => "Bool".to_string(),
+        FLOAT => "Float".to_string(),
+        _ => "Ooops".to_string(),
+    }
+}
+
+fn print_symbol_table(ST: Vec<(String, String, usize)>) {
+    println!("TYPE       Variable      Line#");
+
+    for i in ST {
+        println!("{}           {}           {}", i.0, i.1, i.2);
     }
 }

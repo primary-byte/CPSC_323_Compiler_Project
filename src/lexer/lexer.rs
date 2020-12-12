@@ -12,6 +12,7 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
     let mut current_state: FsmTransitions = _Reject; //Current state we are in
     let mut current_token = String::new(); //current token we are working on
     let mut index = 0;
+    let mut line_count = 1;
     //loop through characters
     while index != expression.len() {
         col = get_col(match expression.chars().nth(index) {
@@ -25,8 +26,13 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
 
         //for rejection state
         if current_state == _Reject {
+            if prev_state == _New_line {
+                line_count = line_count + 1;
+                //index = index + 1;
+            }
+
             //check precursor states for validity, if not found then continue to next
-            if prev_state != _Space {
+            if prev_state != _Space && prev_state != _New_line {
                 if prev_state == _Comment {
                     current_token.push(match expression.chars().nth(index) {
                         Some(c) => c,
@@ -46,6 +52,7 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
                 access.token = current_token;
                 access.lexeme = prev_state;
                 access.lexeme_name = get_lexeme_name(&access.lexeme);
+                access.line = line_count;
                 tokens.push(access.clone());
             }
 
@@ -68,6 +75,7 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
         access.token = current_token.clone();
         access.lexeme = current_state;
         access.lexeme_name = get_lexeme_name(&access.lexeme);
+        access.line = line_count;
         tokens.push(access.clone());
     }
 
@@ -84,7 +92,7 @@ fn get_col(c: char) -> FsmTransitions {
         match c {
             '!' => _Comment,
             ' ' => _Space,
-            '\n' => _Space,
+            '\n' => _New_line,
             '\r' => _Space,
             '\t' => _Space,
             '$' => _String,

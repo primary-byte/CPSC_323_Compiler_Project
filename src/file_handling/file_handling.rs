@@ -30,7 +30,7 @@ pub fn get_file_name(count: &mut i32) -> String {
         println!("Please enter the path to the output file: ");
     }
 
-    *count = 1;
+    //*count = 1;
 
     io::stdin()
         .read_line(&mut file_name)

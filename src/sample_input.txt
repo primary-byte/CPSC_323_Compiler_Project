@@ -1,7 +1,14 @@
-begin
+int a; 
+bool  b;
+a + b + c;
+<link rel="stylesheet" href="f">
+<i class="fa fa-facebook
+eer
 
-while a < b do a = a + 1; whileend;
-
-if !!!! c = (a+b) else c = a endif;
-
-end
+er
+e
+r
+e
+r
+e
+r" aria-hidden="true"></i>
