@@ -1,8 +1,8 @@
 use prettytable::{Table, Row, Cell};
+use crate::file_handling;
 use crate::file_handling::lexer::*;
 use std::collections::HashMap; //hashmapping
 use std::fs::OpenOptions;
-use std::io::Write; //string operations
 use Symbols::*;
 //derive operations to perform deep copies of the enum later
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -673,7 +673,14 @@ pub fn parse(token_list: Vec<TokenType>) {
         }
     }
 
-    print_symbol_table(ST);
+    // Get output path.
+    // Hacky way to print out the input ui.
+    // Passing a mutable 1 will trigger the second condition. 
+    let output_path: String =
+        file_handling::get_file_name(&mut 1);
+
+    // TODO Output to file using output path. Maybe have print_symbol_table output straight to the output path.
+    print_symbol_table(ST, output_path);
 }
 
 fn return_enum_string(temp: Symbols) -> String {
@@ -685,7 +692,7 @@ fn return_enum_string(temp: Symbols) -> String {
     }
 }
 
-fn print_symbol_table(ST: Vec<(String, String, usize)>) {
+fn print_symbol_table(ST: Vec<(String, String, usize)>, output_path: String) {
     
     
     let mut table = Table::new();
@@ -697,8 +704,15 @@ fn print_symbol_table(ST: Vec<(String, String, usize)>) {
     for i in ST {
         table.add_row(row![i.0,i.1,i.2]);
     }
-
+    let mut output_file = OpenOptions::new()
+                            .write(true)
+                            .create(true)
+                            .open(output_path.trim())
+                            .unwrap();
     //print table to stdout
-    table.printstd();
+    match table.print(&mut output_file) {
+        Ok(num) => println!("Success! Printed {} of lines.", num),
+        Err(err) => println!("{}", err)
+    }
 }
 
