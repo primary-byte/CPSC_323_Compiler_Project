@@ -1,8 +1,9 @@
-use prettytable::{Table, Row, Cell};
 use crate::file_handling;
 use crate::file_handling::lexer::*;
+use prettytable::{Cell, Row, Table};
 use std::collections::HashMap; //hashmapping
 use std::fs::OpenOptions;
+use std::io::Write as IoWrite;
 use Symbols::*;
 //derive operations to perform deep copies of the enum later
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -290,7 +291,7 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((FACTOR, ID), 10);
     LL_TABLE.insert((FACTOR, NUM), 11);
     LL_TABLE.insert((ID_NT, ID), 12);
-    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 21); 
+    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 21);
     //create symbol stack
     let mut ss: Vec<Symbols> = Vec::new();
 
@@ -306,19 +307,31 @@ pub fn parse(token_list: Vec<TokenType>) {
     let mut symbol_name: String = " ".to_string();
     let mut symbol_flag: bool = false;
 
+    let output_path: String = file_handling::get_file_name(&mut 1);
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(output_path.trim())
+        .unwrap();
+
     while ss.len() > 0 {
         //let mut line = String::new();
         //let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
         //println!("Stack: {:?}", ss);
         //println!("Vector in now len: {:?}", ss.len());
+
         if ss[ss.len() - 1] == END_OF_STACK && token_list.len() == token_pointer + 1 {
-            println!("Code parsed Successfully!! :)");
+            if let Err(e) = writeln!(file,"Parse successfully :) \n") {
+                eprintln!("Could not write to file: {}", e);
+            }
             ss.pop();
         }
         //compare the lexer at pointer to stack
         else if ss[ss.len() - 1] == lexer_to_symbol(&token_list[token_pointer]) {
-            println!("Match symbols: {:?}", token_list[token_pointer].token);
+            if let Err(e) = writeln!(file, "Match symbols: {:?}", token_list[token_pointer].token) {
+                eprintln!("Could not write to file: {}", e);
+            }
             //increment token pointer
             token_pointer = token_pointer + 1;
 
@@ -338,7 +351,9 @@ pub fn parse(token_list: Vec<TokenType>) {
                 //TE'
                 Some(1) => {
                     //remvove front
-                    println!("Rule: Expression⟶ Term ExpressionPrime");
+                    if let Err(e) = writeln!(file, "Rule: Expression⟶ Term ExpressionPrime") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(EXPR_PRIME);
                     ss.push(TERM);
@@ -346,7 +361,10 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //+TE'
                 Some(2) => {
-                    println!("ExpressionPrime⟶ + Term ExpressionPrime");
+                    if let Err(e) = writeln!(file,"ExpressionPrime⟶ + Term ExpressionPrime") {
+                eprintln!("Could not write to file: {}", e);
+                    }
+                   
                     //remove front
                     ss.pop();
                     //see above
@@ -357,8 +375,10 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //-TE'
                 Some(3) => {
-
-                    println!("ExpressionPrime⟶ - Term ExpressionPrime");
+                    if let Err(e) = writeln!(file,"ExpressionPrime⟶ - Term ExpressionPrime") {
+                eprintln!("Could not write to file: {}", e);
+                    }
+                
                     ss.pop();
 
                     ss.push(EXPR_PRIME);
@@ -368,13 +388,17 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //EPSILON
                 Some(4) => {
-                    println!("Rule: {:?} ⟶ ϵ", ss[nlength] );
+                    if let Err(e) = writeln!(file,"Rule: {:?} ⟶ ϵ", ss[nlength]) {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                 }
 
                 //F
                 Some(5) => {
-                    println!("Term⟶ Factor TermPrime");
+                     if let Err(e) = writeln!(file,"Term⟶ Factor TermPrime") {
+                eprintln!("Could not write to file: {}", e);
+                     }
                     ss.pop();
                     ss.push(TERM_PRIME);
                     ss.push(FACTOR);
@@ -387,7 +411,9 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
                 //*FT'
                 Some(7) => {
-                    println!("Rule: TermPrime⟶ * Factor TermPrime");
+                    if let Err(e) = writeln!(file,"Rule: TermPrime⟶ * Factor TermPrime") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(TERM_PRIME);
                     ss.push(FACTOR);
@@ -396,7 +422,9 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //FT'
                 Some(8) => {
-                    println!("Rule: TermPrime⟶ / Factor TermPrime");
+                    if let Err(e) = writeln!(file,"Rule: TermPrime⟶ / Factor TermPrime") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(TERM_PRIME);
                     ss.push(FACTOR);
@@ -405,7 +433,9 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //(E)
                 Some(9) => {
-                    println!("Rule: Factor⟶ ( Expression )");
+                    if let Err(e) = writeln!(file,"Rule: Factor⟶ ( Expression )") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     //remove front
                     ss.pop();
                     //add r_paren, expr, l_paren
@@ -416,21 +446,27 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //ID_NT
                 Some(10) => {
-                    println!("Factor⟶ ID");
+                     if let Err(e) = writeln!(file,"Factor⟶ ID") {
+                eprintln!("Could not write to file: {}", e);
+                     }
                     ss.pop();
                     ss.push(Symbols::ID_NT);
                 }
 
                 // <NUM>
                 Some(11) => {
-                    println!("Rule: Factor⟶ num");
+                    if let Err(e) = writeln!(file,"Rule: Factor⟶ num") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(Symbols::NUM);
                 }
 
                 //id
                 Some(12) => {
-                    println!("Rule: ID⟶ id");
+                    if let Err(e) = writeln!(file,"Rule: ID⟶ id") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(Symbols::ID);
                     symbol_name = token_list[token_pointer].token.to_string();
@@ -448,13 +484,17 @@ pub fn parse(token_list: Vec<TokenType>) {
                     //check to see if next token is an "="
                     match token_list[token_pointer + 1].token.as_str() {
                         "=" => {
-                            println!("Rule: Statement⟶ Assign");
+                             if let Err(e) = writeln!(file,"Rule: Statement⟶ Assign") {
+                eprintln!("Could not write to file: {}", e);
+                             }
                             ss.pop();
                             ss.push(ASSIGN);
                         }
 
                         _ => {
-                            println!("Rule: Statement⟶ Expression");
+                            if let Err(e) = writeln!(file,"Rule: Statement⟶ Expression") {
+                eprintln!("Could not write to file: {}", e);
+                            }
                             ss.pop();
                             ss.push(EXPR);
                         }
@@ -462,8 +502,9 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(14) => {
-
-                    println!("Assign⟶ ID = Expression");
+                    if let Err(e) = writeln!(file,"Assign⟶ ID = Expression") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(EXPR);
                     ss.push(EQUAL);
@@ -471,7 +512,9 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(15) => {
-                    println!("Rule: Statement ⟶ Declarative");
+                    if let Err(e) = writeln!(file,"Rule: Statement ⟶ Declarative") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     symbol_type = return_enum_string(current_symbol);
                     ss.push(DECLAR);
@@ -479,7 +522,9 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(16) => {
-                    println!("Rule: Declarative⟶ Type ID MoreIds;");
+                    if let Err(e) = writeln!(file,"Rule: Declarative⟶ Type ID MoreIds;") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(MOREIDS);
                     ss.push(ID_NT);
@@ -487,19 +532,25 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(17) => {
-                    println!("Rule: Type⟶ int");
+                    if let Err(e) = writeln!(file,"Rule: Type⟶ int") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(INT);
                 }
 
                 Some(18) => {
-                    println!("Rule: Type⟶ bool");
+                    if let Err(e) = writeln!(file,"Rule: Type⟶ bool") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(BOOL);
                 }
 
                 Some(19) => {
-                    println!("Rule: Type⟶ float");
+                    if let Err(e) = writeln!(file,"Rule: Type⟶ float") {
+                eprintln!("Could not write to file: {}", e);       
+                    }             
                     ss.pop();
                     ss.push(FLOAT);
                 }
@@ -515,10 +566,11 @@ pub fn parse(token_list: Vec<TokenType>) {
                     ss.push(STATEMENT);
                     ss.push(SEMICOLON);
                 }*/
-
                 //Handles IF statements
                 Some(23) => {
-                    println!("Rule: Statement⟶if Conditional then Statement else Statement endif");
+                    if let Err(e) = writeln!(file,"Rule: Statement⟶if Conditional then Statement else Statement endif") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.push(ENDIF);
                     ss.push(STATEMENT);
                     ss.push(ELSE);
@@ -530,7 +582,9 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //Handles WHILE statements
                 Some(24) => {
-                    println!("Rule: Statement⟶ while Conditional do Statement whileend ");
+                    if let Err(e) = writeln!(file,"Rule: Statement⟶ while Conditional do Statement whileend ") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(WHILEEND);
                     ss.push(SEMICOLON);
@@ -542,17 +596,21 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //Handles begin statements
                 Some(25) => {
-                    println!("Rule Statement ⟶  begin Statement MoreStatements end");
+                    if let Err(e) = writeln!(file,"Rule Statement ⟶  begin Statement MoreStatements end") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(END);
                     ss.push(MORESTATEMENTS);
                     ss.push(STATEMENT);
                     ss.push(BEGIN);
                 }
-                
+
                 //Handles morestatements
                 Some(26) => {
-                    println!("Rule: MoreStatements⟶ ; Statement MoreStatements");
+                    if let Err(e) = writeln!(file,"Rule: MoreStatements⟶ ; Statement MoreStatements") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(MORESTATEMENTS);
                     ss.push(STATEMENT);
@@ -602,61 +660,77 @@ pub fn parse(token_list: Vec<TokenType>) {
                     }
 
                     if relop_check {
-                        println!("Rule:  Conditional⟶ Expression Relop Expression");
+                        if let Err(e) = writeln!(file,"Rule:  Conditional⟶ Expression Relop Expression") {
+                eprintln!("Could not write to file: {}", e);
+                        }
                         ss.pop();
                         ss.push(EXPR);
                         ss.push(RELOP);
                         ss.push(EXPR);
                     } else {
-                        println!("Rule: Conditional⟶ Expression");
+                        if let Err(e) = writeln!(file,"Rule: Conditional⟶ Expression") {
+                eprintln!("Could not write to file: {}", e);
+                        }
+                        println!();
                         ss.pop();
                         ss.push(EXPR);
                     }
                 }
 
                 Some(28) => {
-                    println!("Rule: Relop⟶ <");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ <") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(LTHAN);
                 }
 
                 Some(29) => {
-                    println!("Rule: Relop⟶ <=");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ <=") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(LEQUAL);
                 }
 
                 Some(30) => {
-                    println!("Rule: Relop⟶ ==");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ ==") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(EQUALTO);
                 }
 
                 Some(31) => {
-                    println!("Rule: Relop⟶ <>");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ <>") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(NOTEQUAL);
                 }
                 Some(32) => {
-                    println!("Rule: Relop⟶ >=");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ >=") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(GTHANEQUAL);
                 }
 
                 Some(33) => {
-                    println!("Rule: Relop⟶ >");
+                    if let Err(e) = writeln!(file,"Rule: Relop⟶ >") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.pop();
                     ss.push(GTHAN);
                 }
 
-
-                
                 Some(36) => {
-                    println!("Rule: MoreIds⟶ , ID MoreIds");
+                    if let Err(e) = writeln!(file,"Rule: MoreIds⟶ , ID MoreIds") {
+                eprintln!("Could not write to file: {}", e);
+                    }
                     ss.push(ID_NT);
                     ss.push(COMMA);
                     symbol_flag = true;
-
                 }
 
                 //default
@@ -675,9 +749,7 @@ pub fn parse(token_list: Vec<TokenType>) {
 
     // Get output path.
     // Hacky way to print out the input ui.
-    // Passing a mutable 1 will trigger the second condition. 
-    let output_path: String =
-        file_handling::get_file_name(&mut 1);
+    // Passing a mutable 1 will trigger the second condition.
 
     // TODO Output to file using output path. Maybe have print_symbol_table output straight to the output path.
     print_symbol_table(ST, output_path);
@@ -693,26 +765,24 @@ fn return_enum_string(temp: Symbols) -> String {
 }
 
 fn print_symbol_table(ST: Vec<(String, String, usize)>, output_path: String) {
-    
-    
     let mut table = Table::new();
 
     //add header
-    table.add_row(row!["TYPE","Variable","Line#"]);
+    table.add_row(row!["TYPE", "Variable", "Line#"]);
 
     //add data
     for i in ST {
-        table.add_row(row![i.0,i.1,i.2]);
+        table.add_row(row![i.0, i.1, i.2]);
     }
     let mut output_file = OpenOptions::new()
-                            .write(true)
-                            .create(true)
-                            .open(output_path.trim())
-                            .unwrap();
+        .append(true)
+        .create(true)
+        .open(output_path.trim())
+        .unwrap();
+
     //print table to stdout
     match table.print(&mut output_file) {
-        Ok(num) => println!("Success! Printed {} of lines.", num),
-        Err(err) => println!("{}", err)
+        Ok(num) => println!("Successfully printed to {:?}", output_file),
+        Err(err) => println!("{}", err),
     }
 }
-
