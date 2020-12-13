@@ -1,8 +1,8 @@
 use prettytable::{Table, Row, Cell};
+use crate::file_handling;
 use crate::file_handling::lexer::*;
 use std::collections::HashMap; //hashmapping
 use std::fs::OpenOptions;
-use std::io::Write; //string operations
 use Symbols::*;
 //derive operations to perform deep copies of the enum later
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -673,6 +673,13 @@ pub fn parse(token_list: Vec<TokenType>) {
         }
     }
 
+    // Get output path.
+    // Hacky way to print out the input ui.
+    // Passing a mutable 1 will trigger the second condition. 
+    let output_path: String =
+        file_handling::get_file_name(&mut 1);
+
+    // TODO Output to file using output path. Maybe have print_symbol_table output straight to the output path.
     print_symbol_table(ST);
 }
 

@@ -9,17 +9,18 @@ use std::io::BufReader; //for command line arguments, eg filename.txt
 use std::io::Write as IoWrite;
 
 pub fn get_file_name(count: &mut i32) -> String {
+    // Commented because it seems like we'll probably won't be using optional command arguments.
     //check for command line arguments
-    let args: Vec<String> = env::args().collect();
+    // let args: Vec<String> = env::args().collect();
     //if we have command line argument then use that instead of asking the user.print!
     //  first returned will be the input file, second will be the output file
 
-    if args.len() > 1 && *count == 0 {
-        *count = 1;
-        return args[1].to_string();
-    } else if args.len() > 2 && *count == 1 {
-        return args[2].to_string();
-    }
+    // if args.len() > 1 && *count == 0 {
+    //     *count = 1;
+    //     return args[1].to_string();
+    // } else if args.len() > 2 && *count == 1 {
+    //     return args[2].to_string();
+    // }
 
     //otherwise ask for input
     let mut file_name = String::new();
