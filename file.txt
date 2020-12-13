@@ -1,0 +1,199 @@
+Please enter the path to the input file: 
+Rule Statement ⟶  begin Statement MoreStatements end
+Match symbols: "begin"
+Rule: Statement ⟶ Declarative
+Rule: Declarative⟶ Type ID MoreIds;
+Rule: Type⟶ int
+Match symbols: "int"
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "c"
+Rule: MOREIDS ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ Assign
+Assign⟶ ID = Expression
+Rule: ID⟶ id
+Match symbols: "a"
+Match symbols: "="
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ num
+Match symbols: "4"
+Rule: TERM_PRIME ⟶ ϵ
+ExpressionPrime⟶ + Term ExpressionPrime
+Match symbols: "+"
+Term⟶ Factor TermPrime
+Rule: Factor⟶ num
+Match symbols: "6"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ Expression
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ ( Expression )
+Match symbols: "("
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: TERM_PRIME ⟶ ϵ
+ExpressionPrime⟶ + Term ExpressionPrime
+Match symbols: "+"
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: ")"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ Expression
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ ( Expression )
+Match symbols: "("
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: TermPrime⟶ / Factor TermPrime
+Match symbols: "/"
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: ")"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ Expression
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ ( Expression )
+Match symbols: "("
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: TermPrime⟶ * Factor TermPrime
+Match symbols: "*"
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: ")"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ Expression
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ ( Expression )
+Match symbols: "("
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: TERM_PRIME ⟶ ϵ
+ExpressionPrime⟶ - Term ExpressionPrime
+Match symbols: "-"
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: ")"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement ⟶ Declarative
+Rule: Declarative⟶ Type ID MoreIds;
+Rule: Type⟶ bool
+Match symbols: "bool"
+Rule: ID⟶ id
+Match symbols: "d"
+Rule: MOREIDS ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement ⟶ Declarative
+Rule: Declarative⟶ Type ID MoreIds;
+Rule: Type⟶ float
+Match symbols: "float"
+Rule: ID⟶ id
+Match symbols: "e"
+Rule: MOREIDS ⟶ ϵ
+Rule: MoreStatements⟶ ; Statement MoreStatements
+Match symbols: ";"
+Rule: Statement⟶ while Conditional do Statement whileend 
+Match symbols: "while"
+Rule:  Conditional⟶ Expression Relop Expression
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "a"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Rule: Relop⟶ <
+Match symbols: "<"
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "b"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: "do"
+Rule: Statement⟶ Assign
+Assign⟶ ID = Expression
+Rule: ID⟶ id
+Match symbols: "a"
+Match symbols: "="
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Factor⟶ ID
+Rule: ID⟶ id
+Match symbols: "c"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
+Match symbols: ";"
+Match symbols: "whileend"
+Rule: MORESTATEMENTS ⟶ ϵ
+Match symbols: "end"
+Code parsed Successfully!! :)
++---------+----------+-------+
+| TYPE    | Variable | Line# |
++---------+----------+-------+
+| Integer | a        | 3     |
++---------+----------+-------+
+| Integer | b        | 3     |
++---------+----------+-------+
+| Integer | c        | 3     |
++---------+----------+-------+
+| Bool    | d        | 9     |
++---------+----------+-------+
+| Bool    | e        | 10    |
++---------+----------+-------+

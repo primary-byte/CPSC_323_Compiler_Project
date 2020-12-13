@@ -208,7 +208,7 @@ pub fn parse(token_list: Vec<TokenType>) {
     let mut LL_TABLE = HashMap::new();
 
     //create EXPR row
-    LL_TABLE.insert((STATEMENT, L_PAREN), 1);
+    LL_TABLE.insert((STATEMENT, L_PAREN), 13);
     LL_TABLE.insert((STATEMENT, NUM), 1);
     LL_TABLE.insert((STATEMENT, ID), 13);
     LL_TABLE.insert((STATEMENT, INT), 15);
@@ -217,15 +217,17 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((STATEMENT, IF), 23);
     LL_TABLE.insert((STATEMENT, ELSE), 4);
     LL_TABLE.insert((STATEMENT, ENDIF), 4);
-    LL_TABLE.insert((STATEMENT, WHILE), 34);
+    LL_TABLE.insert((STATEMENT, WHILE), 24);
     LL_TABLE.insert((STATEMENT, WHILEEND), 4);
-    LL_TABLE.insert((STATEMENT, BEGIN), 35);
+    LL_TABLE.insert((STATEMENT, BEGIN), 25);
     LL_TABLE.insert((STATEMENT, END), 4);
     LL_TABLE.insert((STATEMENT, SEMICOLON), 4);
     LL_TABLE.insert((STATEMENT, END_OF_STACK), 4);
     LL_TABLE.insert((MORESTATEMENTS, SEMICOLON), 26);
     LL_TABLE.insert((MORESTATEMENTS, WHILEEND), 4);
     LL_TABLE.insert((MORESTATEMENTS, END), 4);
+    LL_TABLE.insert((MOREIDS, COMMA), 36);
+    LL_TABLE.insert((MOREIDS, SEMICOLON), 4);
     LL_TABLE.insert((ASSIGN, ID), 14);
     LL_TABLE.insert((DECLAR, INT), 16);
     LL_TABLE.insert((DECLAR, BOOL), 16);
@@ -261,23 +263,34 @@ pub fn parse(token_list: Vec<TokenType>) {
     LL_TABLE.insert((EXPR_PRIME, GTHANEQUAL), 4);
     LL_TABLE.insert((EXPR_PRIME, GTHAN), 4);
     LL_TABLE.insert((EXPR_PRIME, DO), 4);
-    LL_TABLE.insert((EXPR_PRIME, SEMICOLON), 20);
+    LL_TABLE.insert((EXPR_PRIME, SEMICOLON), 4);
     LL_TABLE.insert((TERM, L_PAREN), 5);
     LL_TABLE.insert((TERM, NUM), 5);
     LL_TABLE.insert((TERM, ID), 5);
     LL_TABLE.insert((TERM, MULT), 6);
     LL_TABLE.insert((TERM, DIV), 6);
-    LL_TABLE.insert((TERM_PRIME, PLUS), 2);
-    LL_TABLE.insert((TERM_PRIME, MINUS), 3);
+    LL_TABLE.insert((TERM_PRIME, PLUS), 4);
+    LL_TABLE.insert((TERM_PRIME, MINUS), 4);
     LL_TABLE.insert((TERM_PRIME, MULT), 7);
     LL_TABLE.insert((TERM_PRIME, DIV), 8);
     LL_TABLE.insert((TERM_PRIME, R_PAREN), 4);
+    LL_TABLE.insert((TERM_PRIME, SEMICOLON), 4);
+    LL_TABLE.insert((TERM_PRIME, THEN), 4);
+    LL_TABLE.insert((TERM_PRIME, ELSE), 4);
+    LL_TABLE.insert((TERM_PRIME, ENDIF), 4);
+    LL_TABLE.insert((TERM_PRIME, LTHAN), 4);
+    LL_TABLE.insert((TERM_PRIME, LEQUAL), 4);
+    LL_TABLE.insert((TERM_PRIME, EQUALTO), 4);
+    LL_TABLE.insert((TERM_PRIME, NOTEQUAL), 4);
+    LL_TABLE.insert((TERM_PRIME, GTHANEQUAL), 4);
+    LL_TABLE.insert((TERM_PRIME, GTHAN), 4);
+    LL_TABLE.insert((TERM_PRIME, DO), 4);
     LL_TABLE.insert((TERM_PRIME, END_OF_STACK), 4);
     LL_TABLE.insert((FACTOR, L_PAREN), 9);
     LL_TABLE.insert((FACTOR, ID), 10);
     LL_TABLE.insert((FACTOR, NUM), 11);
     LL_TABLE.insert((ID_NT, ID), 12);
-    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 21);
+    LL_TABLE.insert((END_OF_STACK, SEMICOLON), 21); 
     //create symbol stack
     let mut ss: Vec<Symbols> = Vec::new();
 
@@ -294,7 +307,7 @@ pub fn parse(token_list: Vec<TokenType>) {
     let mut symbol_flag: bool = false;
 
     while ss.len() > 0 {
-        // let mut line = String::new();
+        //let mut line = String::new();
         //let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
         //println!("Stack: {:?}", ss);
@@ -318,13 +331,14 @@ pub fn parse(token_list: Vec<TokenType>) {
             let mut current_table_cell = LL_TABLE.get(&(ss[nlength], current_symbol));
 
             //output the rule
-            println!("Rule: {:?}", current_table_cell);
+            //println!("Rule: {:?}", current_table_cell);
 
             //match correct rule
             match current_table_cell {
                 //TE'
                 Some(1) => {
                     //remvove front
+                    println!("Rule: Expression⟶ Term ExpressionPrime");
                     ss.pop();
                     ss.push(EXPR_PRIME);
                     ss.push(TERM);
@@ -332,6 +346,7 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //+TE'
                 Some(2) => {
+                    println!("ExpressionPrime⟶ + Term ExpressionPrime");
                     //remove front
                     ss.pop();
                     //see above
@@ -342,6 +357,8 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //-TE'
                 Some(3) => {
+
+                    println!("ExpressionPrime⟶ - Term ExpressionPrime");
                     ss.pop();
 
                     ss.push(EXPR_PRIME);
@@ -351,64 +368,72 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //EPSILON
                 Some(4) => {
+                    println!("Rule: {:?} ⟶ ϵ", ss[nlength] );
                     ss.pop();
                 }
 
                 //F
                 Some(5) => {
+                    println!("Term⟶ Factor TermPrime");
                     ss.pop();
-                    ss.push(Symbols::FACTOR);
+                    ss.push(TERM_PRIME);
+                    ss.push(FACTOR);
                 }
 
                 //T'
                 Some(6) => {
                     ss.pop();
-                    ss.push(Symbols::TERM_PRIME);
+                    ss.push(TERM_PRIME);
                 }
                 //*FT'
                 Some(7) => {
+                    println!("Rule: TermPrime⟶ * Factor TermPrime");
                     ss.pop();
-                    ss.push(Symbols::TERM_PRIME);
-                    ss.push(Symbols::FACTOR);
-                    ss.push(Symbols::MULT);
+                    ss.push(TERM_PRIME);
+                    ss.push(FACTOR);
+                    ss.push(MULT);
                 }
 
                 //FT'
                 Some(8) => {
+                    println!("Rule: TermPrime⟶ / Factor TermPrime");
                     ss.pop();
-                    ss.push(Symbols::TERM_PRIME);
-                    ss.push(Symbols::FACTOR);
-                    ss.push(Symbols::DIV);
+                    ss.push(TERM_PRIME);
+                    ss.push(FACTOR);
+                    ss.push(DIV);
                 }
 
                 //(E)
                 Some(9) => {
+                    println!("Rule: Factor⟶ ( Expression )");
                     //remove front
                     ss.pop();
                     //add r_paren, expr, l_paren
-                    ss.push(Symbols::R_PAREN);
-                    ss.push(Symbols::EXPR);
-                    ss.push(Symbols::L_PAREN);
+                    ss.push(R_PAREN);
+                    ss.push(EXPR);
+                    ss.push(L_PAREN);
                 }
 
                 //ID_NT
                 Some(10) => {
+                    println!("Factor⟶ ID");
                     ss.pop();
                     ss.push(Symbols::ID_NT);
                 }
 
                 // <NUM>
                 Some(11) => {
+                    println!("Rule: Factor⟶ num");
                     ss.pop();
                     ss.push(Symbols::NUM);
                 }
 
                 //id
                 Some(12) => {
+                    println!("Rule: ID⟶ id");
                     ss.pop();
                     ss.push(Symbols::ID);
                     symbol_name = token_list[token_pointer].token.to_string();
-                    //symbol_flag = true;
                     if symbol_flag {
                         ST.push((
                             symbol_type.clone(),
@@ -423,11 +448,13 @@ pub fn parse(token_list: Vec<TokenType>) {
                     //check to see if next token is an "="
                     match token_list[token_pointer + 1].token.as_str() {
                         "=" => {
+                            println!("Rule: Statement⟶ Assign");
                             ss.pop();
                             ss.push(ASSIGN);
                         }
 
                         _ => {
+                            println!("Rule: Statement⟶ Expression");
                             ss.pop();
                             ss.push(EXPR);
                         }
@@ -435,6 +462,8 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(14) => {
+
+                    println!("Assign⟶ ID = Expression");
                     ss.pop();
                     ss.push(EXPR);
                     ss.push(EQUAL);
@@ -442,6 +471,7 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(15) => {
+                    println!("Rule: Statement ⟶ Declarative");
                     ss.pop();
                     symbol_type = return_enum_string(current_symbol);
                     ss.push(DECLAR);
@@ -449,28 +479,33 @@ pub fn parse(token_list: Vec<TokenType>) {
                 }
 
                 Some(16) => {
+                    println!("Rule: Declarative⟶ Type ID MoreIds;");
                     ss.pop();
+                    ss.push(MOREIDS);
                     ss.push(ID_NT);
                     ss.push(TYPE);
                 }
 
                 Some(17) => {
+                    println!("Rule: Type⟶ int");
                     ss.pop();
                     ss.push(INT);
                 }
 
                 Some(18) => {
+                    println!("Rule: Type⟶ bool");
                     ss.pop();
                     ss.push(BOOL);
                 }
 
                 Some(19) => {
+                    println!("Rule: Type⟶ float");
                     ss.pop();
                     ss.push(FLOAT);
                 }
 
                 //SEMI COLON
-                Some(20) => {
+                /*Some(20) => {
                     ss.pop();
                     ss.push(STATEMENT);
                     ss.push(SEMICOLON);
@@ -479,10 +514,11 @@ pub fn parse(token_list: Vec<TokenType>) {
                 Some(21) => {
                     ss.push(STATEMENT);
                     ss.push(SEMICOLON);
-                }
+                }*/
 
                 //Handles IF statements
                 Some(23) => {
+                    println!("Rule: Statement⟶if Conditional then Statement else Statement endif");
                     ss.push(ENDIF);
                     ss.push(STATEMENT);
                     ss.push(ELSE);
@@ -494,8 +530,10 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //Handles WHILE statements
                 Some(24) => {
+                    println!("Rule: Statement⟶ while Conditional do Statement whileend ");
                     ss.pop();
                     ss.push(WHILEEND);
+                    ss.push(SEMICOLON);
                     ss.push(STATEMENT);
                     ss.push(DO);
                     ss.push(CONDITIONAL);
@@ -504,15 +542,17 @@ pub fn parse(token_list: Vec<TokenType>) {
 
                 //Handles begin statements
                 Some(25) => {
+                    println!("Rule Statement ⟶  begin Statement MoreStatements end");
                     ss.pop();
                     ss.push(END);
                     ss.push(MORESTATEMENTS);
                     ss.push(STATEMENT);
                     ss.push(BEGIN);
                 }
-
+                
                 //Handles morestatements
                 Some(26) => {
+                    println!("Rule: MoreStatements⟶ ; Statement MoreStatements");
                     ss.pop();
                     ss.push(MORESTATEMENTS);
                     ss.push(STATEMENT);
@@ -562,60 +602,61 @@ pub fn parse(token_list: Vec<TokenType>) {
                     }
 
                     if relop_check {
+                        println!("Rule:  Conditional⟶ Expression Relop Expression");
                         ss.pop();
                         ss.push(EXPR);
                         ss.push(RELOP);
                         ss.push(EXPR);
                     } else {
+                        println!("Rule: Conditional⟶ Expression");
                         ss.pop();
                         ss.push(EXPR);
                     }
                 }
 
                 Some(28) => {
+                    println!("Rule: Relop⟶ <");
                     ss.pop();
                     ss.push(LTHAN);
                 }
 
                 Some(29) => {
+                    println!("Rule: Relop⟶ <=");
                     ss.pop();
                     ss.push(LEQUAL);
                 }
 
                 Some(30) => {
+                    println!("Rule: Relop⟶ ==");
                     ss.pop();
                     ss.push(EQUALTO);
                 }
 
                 Some(31) => {
+                    println!("Rule: Relop⟶ <>");
                     ss.pop();
                     ss.push(NOTEQUAL);
                 }
                 Some(32) => {
+                    println!("Rule: Relop⟶ >=");
                     ss.pop();
                     ss.push(GTHANEQUAL);
                 }
 
                 Some(33) => {
+                    println!("Rule: Relop⟶ >");
                     ss.pop();
                     ss.push(GTHAN);
                 }
 
-                Some(34) => {
-                    ss.pop();
-                    ss.push(WHILEEND);
-                    ss.push(STATEMENT);
-                    ss.push(DO);
-                    ss.push(CONDITIONAL);
-                    ss.push(WHILE);
-                }
 
-                Some(35) => {
-                    ss.pop();
-                    ss.push(END);
-                    ss.push(MORESTATEMENTS);
-                    ss.push(STATEMENT);
-                    ss.push(BEGIN);
+                
+                Some(36) => {
+                    println!("Rule: MoreIds⟶ , ID MoreIds");
+                    ss.push(ID_NT);
+                    ss.push(COMMA);
+                    symbol_flag = true;
+
                 }
 
                 //default
@@ -646,6 +687,7 @@ fn return_enum_string(temp: Symbols) -> String {
 
 fn print_symbol_table(ST: Vec<(String, String, usize)>) {
     
+    
     let mut table = Table::new();
 
     //add header
@@ -659,3 +701,4 @@ fn print_symbol_table(ST: Vec<(String, String, usize)>) {
     //print table to stdout
     table.printstd();
 }
+
