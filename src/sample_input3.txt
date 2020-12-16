@@ -1,1 +1,7 @@
-c = 3 + ( 4 / 2 ) * 3 
+begin
+int num;
+num = 0;
+nim = 3;
+mrer = 4;
+bool fafa;
+end

@@ -26,13 +26,17 @@ pub fn lexer(expression: &String) -> Vec<TokenType> {
 
         //for rejection state
         if current_state == _Reject {
+            if prev_state == _Comment {
+                line_count = line_count + 1;
+                index = index + 1;
+            }
             if prev_state == _New_line {
                 line_count = line_count + 1;
                 //index = index + 1;
             }
 
             //check precursor states for validity, if not found then continue to next
-            if prev_state != _Space && prev_state != _New_line {
+            if prev_state != _Space && prev_state != _New_line && prev_state != _Comment {
                 if prev_state == _Comment {
                     current_token.push(match expression.chars().nth(index) {
                         Some(c) => c,

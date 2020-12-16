@@ -1,3 +1,18 @@
-int a;
-a = 34;
-int a, b, c;
+! Find largest value between two numbers!
+begin
+int num, nu2m, large$;
+num = 0;
+nu2m = 15;
+boolean hey;
+hey = true;
+hey = false;
+if(num > nu2m)
+{
+	large$ = num;
+}
+else
+{
+	large$ = nu2m;
+}
+endif
+end

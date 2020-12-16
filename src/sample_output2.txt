@@ -1,15 +1,65 @@
-"- ="
-"- Token: TokenType { token: \"\", lexeme: _Reject, lexeme_name: \"\" }"
-"- Rule: <Assign> -> <ID> = <Expression><ID> -> id"
-"- a"
-"- Token: TokenType { token: \"a\", lexeme: _Identifier, lexeme_name: \"IDENTIFIER\" }"
-"- Rule: <ID> -> id"
-"- +"
-"- Token: TokenType { token: \"+\", lexeme: _Operator, lexeme_name: \"OPERATOR\" }"
-"- Rule: <ExpressionPrime> -> +<Term> <ExpressionPrime>"
-"- b"
-"- Token: TokenType { token: \"b\", lexeme: _Identifier, lexeme_name: \"IDENTIFIER\" }"
-"- Rule: <ID> -> id<Assign> -> <ID> = <Expression><ID> -> id"
-"- c"
-"- Token: TokenType { token: \"c\", lexeme: _Identifier, lexeme_name: \"IDENTIFIER\" }"
-"- Rule: <ID> -> id<ExpressionPrime> -> +<Term> <ExpressionPrime>"
+Rule Statement ⟶  begin Statement MoreStatements end
+Match symbols: "begin"
+Rule: Statement ⟶ Declarative
+Rule: Declarative⟶ Type ID MoreIds;
+Rule: Type⟶ int
+Match symbols: "int"
+Rule: ID⟶ id
+Match symbols: "num"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "nu2m"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "large$"
+Rule: MOREIDS ⟶ ϵ
+Match symbols: ";"
++---------+----------+-------+
+| TYPE    | Variable | Line# |
++---------+----------+-------+
+| Integer | num      | 4     |
++---------+----------+-------+
+| Integer | nu2m     | 4     |
++---------+----------+-------+
+| Integer | large$   | 4     |
++---------+----------+-------+
+Rule Statement ⟶  begin Statement MoreStatements end
+Match symbols: "begin"
+Rule: Statement ⟶ Declarative
+Rule: Declarative⟶ Type ID MoreIds;
+Rule: Type⟶ int
+Match symbols: "int"
+Rule: ID⟶ id
+Match symbols: "num"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "nu2m"
+Rule: MoreIds⟶ , ID MoreIds
+Match symbols: ","
+Rule: ID⟶ id
+Match symbols: "large$"
+Rule: MOREIDS ⟶ ϵ
+Match symbols: ";"
+Rule: Statement⟶ Assign
+Assign⟶ ID = Expression
+Rule: ID⟶ id
+Match symbols: "num"
+Match symbols: "="
+Rule: Expression⟶ Term ExpressionPrime
+Term⟶ Factor TermPrime
+Rule: Factor⟶ num
+Match symbols: "0"
+Rule: TERM_PRIME ⟶ ϵ
+Rule: EXPR_PRIME ⟶ ϵ
++---------+----------+-------+
+| TYPE    | Variable | Line# |
++---------+----------+-------+
+| Integer | num      | 4     |
++---------+----------+-------+
+| Integer | nu2m     | 4     |
++---------+----------+-------+
+| Integer | large$   | 4     |
++---------+----------+-------+
