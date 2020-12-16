@@ -228,10 +228,10 @@ pub fn parse(token_list: Vec<TokenType>) {
         .unwrap();
 
     while ss.len() > 0 {
-        let mut line = String::new();
-        let b1 = std::io::stdin().read_line(&mut line).unwrap();
+        //let mut line = String::new();                                  //uncomment to
+        //let b1 = std::io::stdin().read_line(&mut line).unwrap();      //loop one at a time
 
-        println!("Stack: {:?}", ss);
+        //println!("Stack: {:?}", ss);                                 // uncomment to print current stack on command line
         //println!("Vector in now len: {:?}", ss.len());
 
         if ss[ss.len() - 1] == END_OF_STACK && token_list.len() == token_pointer + 1 {
